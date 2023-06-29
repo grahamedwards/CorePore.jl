@@ -130,7 +130,7 @@ for n=1:nStart-1 % timespan of model run
 
 % run time loop
 for s = 1:time/dt 
-    
+%% This whole block is now a function ~ `chooseboundaries`
 % pick out boundary conditions and set upper boundary conditions
     
 if bc(n)==1 % ocean conditions
@@ -176,6 +176,13 @@ end
 end
 end
     
+%% The next lines rho= ... end would make a great function. 
+% To speed it up, rather than calculate a vector of rho, you could make a
+% function that goes into the for-loop below. This function takes a value rho and a value
+% from C_Cl, and returns both a new rho (to be reused in the next loop) and
+% a value for v. (I think the calculation is faster for the whole vector,
+% but reallocating the new vector is gonna ding you every time)
+
 % account for density driven vertical flow of brine in sediments
     rho=((C_Cl(:,1).*0.0018)+1)*1000; % fluid density
     if rho(i-1)<rho(i)
@@ -184,7 +191,7 @@ end
         v=k.*(rho(i-1)-rho(i))./rho(i); % vertical velocity
     end
 
-
+%% Turn each diffusion calculation into a function.
 % run diffusion model
 for i = 2:(nz-1)
     
