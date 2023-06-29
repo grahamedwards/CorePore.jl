@@ -39,4 +39,16 @@ assert(abs(-0.3302-d18Of)<cbtol,'freezing condition d18Oo failed')
 assert(abs(-0.3696-d18Om)<cbtol,'melting condition d18Oo failed') 
 assert(abs(19.2465-cClm)<cbtol,'melting condition cClo failed')
 
+%% rhov
+rhovtest_rho = 2.;
+rhovtest_cCl = 20.;
+rhovtest_k = 0.1;
+
+[rho,v] = rhov(rhovtest_rho,rhovtest_cCl,rhovtest_k)
+assert(v>0,'velocity not positive when rho_<rho')
+assert(abs(rho-1.0359)<1e-4,'vertical velocity calculation failed')
+
+[rho,v] = rhov(rho,rhovtest_cCl,rhovtest_k)
+assert(v==0, 'velocity non-zero when rho_ >= rho')
+
 %% nextfunction
