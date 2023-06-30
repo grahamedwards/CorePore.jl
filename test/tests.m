@@ -49,6 +49,27 @@ assert(v>0,'velocity not positive when rho_<rho')
 assert(abs(rho-1.0359)<1e-4,'vertical velocity calculation failed')
 
 [rho,v] = rhov(rho,rhovtest_cCl,rhovtest_k)
-assert(v==0, 'velocity non-zero when rho_ >= rho')
+assert(v==0, 'velocity non-zero when rho_ <= rho')
+
+%% cCl_diffusion
+
+cbtol = 1e-4; % set some reasonable accuracy tolerance 
+
+cCl_test=17.2879;
+cCl_test_a=17.3687;
+cCl_test_b=17.2057;
+
+Diff_Cl=0.0296;
+Diff_Cl_=0.0293;
+
+v=1.4349e-05;
+dt=10;
+dz=5;
+
+
+cCl=cCl_diffusion(cCl_test,cCl_test_a,cCl_test_b,Diff_Cl,Diff_Cl_,v,dt,dz);
+
+assert(abs(17.2880-cCl)<cbtol,'cCl calculation failed')
+
 
 %% nextfunction
