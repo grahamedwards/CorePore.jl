@@ -53,7 +53,7 @@ assert(v==0, 'velocity non-zero when rho_ <= rho')
 
 %% cCl_diffusion
 
-cbtol = 1e-4; % set some reasonable accuracy tolerance 
+cdifftol = 1e-4; % set some reasonable accuracy tolerance 
 
 cCl_test=17.2879;
 cCl_test_a=17.3687;
@@ -69,7 +69,27 @@ dz=5;
 
 cCl=cCl_diffusion(cCl_test,cCl_test_a,cCl_test_b,Diff_Cl,Diff_Cl_,v,dt,dz);
 
-assert(abs(17.2880-cCl)<cbtol,'cCl calculation failed')
+assert(abs(17.2880-cCl)<cdifftol,'cCl calculation failed')
+
+%% d18O_diffusion
+
+odifftol = 1e-4; % set some reasonable accuracy tolerance 
+
+d18O_test=-25.1217;
+d18O_test_a=-25.0559;
+d18O_test_b=-25.1996;
+
+Diff_d18O=0.0202;
+Diff_d18O_=0.0200;
+
+v=1.0695e-05;
+dt=10;
+dz=5;
+
+
+d18O=d18O_diffusion(d18O_test,d18O_test_a,d18O_test_b,Diff_d18O,Diff_d18O_,v,dt,dz);
+
+assert(abs(-25.1217-d18O)<odifftol,'d18O calculation failed')
 
 
 %% nextfunction
