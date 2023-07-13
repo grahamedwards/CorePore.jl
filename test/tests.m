@@ -92,4 +92,23 @@ d18O=d18O_diffusion(d18O_test,d18O_test_a,d18O_test_b,Diff_d18O,Diff_d18O_,v,dt,
 assert(abs(-25.1217-d18O)<odifftol,'d18O calculation failed')
 
 
+%% meltoceanfreeze
+
+benthic_otest=3;
+benthic_ftest=4;
+benthic_mtest=5;
+
+
+ocean2freeze=3.5;
+freeze2melt=4.2;
+
+mof=meltoceanfreeze(benthic_otest,ocean2freeze,freeze2melt);
+assert(mof==0, 'ocean mof failed')
+
+mof=meltoceanfreeze(benthic_ftest,ocean2freeze,freeze2melt);
+assert(mof==-1, 'freezing mof failed')
+
+mof=meltoceanfreeze(benthic_mtest,ocean2freeze,freeze2melt);
+assert(mof==1, 'melting mof failed')
+
 %% nextfunction
