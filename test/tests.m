@@ -69,27 +69,27 @@ dz=5;
 
 cCl=cCl_diffusion(cCl_test,cCl_test_a,cCl_test_b,coeff_Cl_test,coeff2_Cl_test,v,dt,dz);
 
-assert(abs(17.2880-cCl)>cdifftol,'cCl calculation failed')
+assert(abs(10.2658-cCl)<cdifftol,'cCl calculation failed')
 
 %% d18O_diffusion
 
 odifftol = 1e-4; % set some reasonable accuracy tolerance 
 
-d18O_test=-25.1217;
-d18O_test_a=-25.0559;
-d18O_test_b=-25.1996;
+d18O_test=-24.9976;
+d18O_test_a=-25.0507;
+d18O_test_b=-24.9863;
 
-Diff_d18O=0.0202;
-Diff_d18O_=0.0200;
+coeff_d18O_test=0.0077;
+coeff2_d18O_test=4.3153e-04;
 
-v=1.0695e-05;
+v=1.7103e-05;
 dt=10;
 dz=5;
 
 
-d18O=d18O_diffusion(d18O_test,d18O_test_a,d18O_test_b,Diff_d18O,Diff_d18O_,v,dt,dz);
+d18O=d18O_diffusion(d18O_test,d18O_test_a,d18O_test_b,coeff_d18O_test,coeff2_d18O_test,v,dt,dz);
 
-assert(abs(-25.1217-d18O)<odifftol,'d18O calculation failed')
+assert(abs(-24.9980-d18O)<odifftol,'d18O calculation failed')
 
 
 %% meltoceanfreeze
