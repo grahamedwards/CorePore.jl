@@ -1,4 +1,4 @@
-function cCl = cCl_diffusion(cCl_,cCl_above,cCl_below,Diff_Cl,Diff_Cl_,v,dt,dz)
+function cCl = cCl_diffusion(cCl_,cCl_above,cCl_below,coeff_Cl,coeff2_Cl,v,dt,dz)
 % CCL_DIFFUSION calculates cCl in a vertical profile
 % 
 % Inputs: cCl for the current cell in the previous timestep (cCl_),
@@ -12,8 +12,6 @@ function cCl = cCl_diffusion(cCl_,cCl_above,cCl_below,Diff_Cl,Diff_Cl_,v,dt,dz)
 % Outputs: chloride concentration of current cell
 % 
 
-coeff_Cl = Diff_Cl.*dt./dz./dz; % coefficient used in FD calculations
-coeff2_Cl = (Diff_Cl - Diff_Cl_) * dt/dz; % coefficient used in FD calculations
 
 cCl=cCl_ + coeff_Cl*(cCl_above - 2*cCl_ + cCl_below) + coeff2_Cl*(cCl_above - cCl_) - (v*dt*dz)*(cCl_ - cCl_above); % Cl concetration of cell
 
