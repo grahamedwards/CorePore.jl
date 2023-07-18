@@ -222,7 +222,7 @@ toc
 % same as above, but this time with functions
 
 
-addpath('functions/')
+% addpath('functions/')
 
 tic
 
@@ -307,7 +307,7 @@ end
 C_Cl(:,:)=seawater.cCl; 
 C_d18O(:,:)=seawater.d18O;
 
-rho=(seawater.cCl * 0.0018 ) + 1 ; % initial porewater density
+% rho=(seawater.cCl * 0.0018 ) + 1 ; % initial porewater density
 
 
 % The main time loop solves the 1D equation: dC/dt = Diff*d2C/dz2 using the
@@ -317,18 +317,21 @@ rho=(seawater.cCl * 0.0018 ) + 1 ; % initial porewater density
 
 for n=1:nStart-1 % timespan of model run
 
+% pick out boundary conditions 
+mof=meltoceanfreeze(Benthic(n,2),ocean2freeze,freeze2melt);
+
 
 % run time loop
 for s = 1:num 
     
-% pick out boundary conditions and set upper boundary conditions
-mof=meltoceanfreeze(Benthic(s),ocean2freeze,freeze2melt);
+% set upper boundary conditions
 [cClo,d18Oo]=chooseboundaries(mof,C_Cl(1,1),C_d18O(1,1),dz,dt,m_rt,f_rt,seawater);
 C_Cl(1,1) = cClo; % setting the upper boundary condition
 C_Cl(1,2) = cClo; % setting the upper boundary condition
 C_d18O(1,1) = d18Oo; % setting the upper boundary condition
 C_d18O(1,2) = d18Oo; % setting the upper boundary condition
-    
+
+  
 
 % account for density driven vertical flow of brine in sediments
     rho=((C_Cl(:,1).*0.0018)+1)*1000; % fluid density
