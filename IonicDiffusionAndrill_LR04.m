@@ -330,13 +330,19 @@ C_d18O(1,1) = d18Oo; % setting the upper boundary condition
 C_d18O(1,2) = d18Oo; % setting the upper boundary condition
     
 
-    
+% account for density driven vertical flow of brine in sediments
+    rho=((C_Cl(:,1).*0.0018)+1)*1000; % fluid density
+    if rho(i-1)<rho(i)
+        v=0;
+    else
+        v=k.*(rho(i-1)-rho(i))./rho(i); % vertical velocity
+    end    
 
 
 % run diffusion model
 for i = 2:(nz-1)
     
-    [rho,v]=rhov(rho,C_Cl(i,1),k);
+%     [rho,v]=rhov(rho,C_Cl(i,1),k);
 
     C_Cl(i,2) = cCl_diffusion(C_Cl(i,1),C_Cl(i-1,1),C_Cl(i+1,1),coeff_Cl(i),coeff2_Cl(i),v,dt,dz);
     C_d18O(i,2) = d18O_diffusion(C_d18O(i,1),C_d18O(i-1,1),C_d18O(i+1,1),coeff_d18O(i),coeff2_d18O(i),v,dt,dz);
