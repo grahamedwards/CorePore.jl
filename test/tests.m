@@ -27,8 +27,8 @@ freezingrate=2e-5;
 
 % run the function in each unique scenario:
 [cClsw,d18Osw] = chooseboundaries(0,cClo,d18Oo, dz, dt, meltingrate, freezingrate, seawater);
-[cClf,d18Of] = chooseboundaries(1,cClsw,d18Osw, dz, dt, meltingrate, freezingrate, seawater);
-[cClm,d18Om] = chooseboundaries(-1,cClsw,d18Osw, dz, dt, meltingrate, freezingrate, seawater);
+[cClf,d18Of] = chooseboundaries(-1,cClsw,d18Osw, dz, dt, meltingrate, freezingrate, seawater);
+[cClm,d18Om] = chooseboundaries(1,cClsw,d18Osw, dz, dt, meltingrate, freezingrate, seawater);
 
 
 assert(cClsw == seawater.cCl, 'seawater cClo failed')
