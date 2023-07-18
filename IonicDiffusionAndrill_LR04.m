@@ -290,6 +290,18 @@ temperature = (0.0767.*depth_vec)-2.4+273.15; % Morin et al. 2010
 Diff_Cl=exp(3.8817+(-2.2854e+03./temperature)); % Cl, m^2/yr
 Diff_d18O=exp(4.2049+(-2.2699e+03./temperature)); % d18O, m^2/yr
 
+% coeff and coeff2 are built into the diffusion functions
+coeff_Cl = Diff_Cl.*dt./dz./dz; % coefficient used in FD calculations
+coeff_d18O = Diff_d18O.*dt./dz./dz; % coefficient used in FD calculations
+
+coeff2_Cl = zeros(1,length(coeff_Cl));
+coeff2_d18O = zeros(1,length(coeff_d18O));
+
+for i=2:length(Diff_Cl)
+    coeff2_Cl(i) = (Diff_Cl(i) - Diff_Cl(i-1)) * dt/dz;
+    coeff2_d18O(i) = (Diff_d18O(i) - Diff_d18O(i-1)) * dt/dz;
+end
+
 
 % initial conditions - assumed that initially all seawater
 C_Cl(:,:)=seawater.cCl; 
@@ -326,8 +338,8 @@ for i = 2:(nz-1)
     
     [rho,v]=rhov(rho,C_Cl(i,1),k);
 
-    C_Cl(i,2) = cCl_diffusion(C_Cl(i,1),C_Cl(i-1,1),C_Cl(i+1,1),Diff_Cl(i),Diff_Cl(i-1),v,dt,dz);
-    C_d18O(i,2) = d18O_diffusion(C_d18O(i,1),C_d18O(i-1,1),C_d18O(i+1,1),Diff_d18O(i),Diff_d18O(i-1),v,dt,dz);
+    C_Cl(i,2) = cCl_diffusion(C_Cl(i,1),C_Cl(i-1,1),C_Cl(i+1,1),coeff_Cl(i),coeff2_Cl(i),v,dt,dz);
+    C_d18O(i,2) = d18O_diffusion(C_d18O(i,1),C_d18O(i-1,1),C_d18O(i+1,1),coeff_d18O(i),coeff2_d18O(i),v,dt,dz);
 
 end
 C_Cl(end,2)=C_Cl(end-1,2); % set bottom value to penultimate value
