@@ -23,7 +23,7 @@ elseif mof==-1 % freezing conditions
     frtdt = f_rt*dt;
 
     cClo = cClo * dz_ / (dz_ - frtdt); 
-    d18Oo = d18Oo + 1.59 * log(1 - frtdt / dz_); % simplified from eqn 2 of Toyota et al. (2017)
+    d18Oo = d18Oo + 1.59 * log(1 - (frtdt / dz_)); % simplified from eqn 2 of Toyota et al. (2017)
    
 
 elseif mof==1 % melting conditions
