@@ -1,5 +1,5 @@
 module PorewaterDiffusion
 
-# Write your package code here.
+include("diffuse.jl")
 
 end
