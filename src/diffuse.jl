@@ -27,7 +27,7 @@ function boundaryconditions(Cl, d18O, x, ocean2freeze,freeze2melt, meltrate, fre
         melt = meltrate * dt
         
         Cl *= ϕdz / (ϕdz + melt)
-        d18O *= ϕdz * melt / (ϕdz+melt)
+        d18O = (d18O * ϕdz - 40 * melt) / (ϕdz+melt)
     
     else # mid δ18O -> mid temps -> cold-based
         ϕdz = 0.4dz # scaled for porosity

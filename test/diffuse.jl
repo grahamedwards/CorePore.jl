@@ -7,7 +7,7 @@ bctest = (dt=10.,dz=5.,m=2e-4, f=2e-5)
 warmbased = PorewaterDiffusion.boundaryconditions(seawater..., 4., 1., 3., bctest.m, bctest.f, seawater..., bctest.dz, bctest.dt)
     
 @test warmbased[1] ≈ 19.246453546453548
-@test warmbased[2] ≈ -0.0006593406593406596
+@test warmbased[2] ≈ -0.36963036963036966
     
 coldbased = PorewaterDiffusion.boundaryconditions(seawater..., 2., 1., 3., bctest.m, bctest.f, seawater..., bctest.dz, bctest.dt)
     
