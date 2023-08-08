@@ -1,22 +1,17 @@
 using PorewaterDiffusion
 using Test
 
-@testset "PorewaterDiffusion.jl" begin
+@testset "custom types" begin 
 
-    seawater = (cCl =19.2657, d18O = -0.3300)
-    bctest = (dt=10.,dz=5.,m=2e-4, f=2e-5)
-    
-    
-    @test PorewaterDiffusion.boundaryconditions(0., 0., .4, 1., 3., bctest.m, bctest.f, seawater, bctest.dz, bctest.dt) == (seawater.cCl,seawater.d18O)
-    
-    warmbased = PorewaterDiffusion.boundaryconditions(seawater..., 4., 1., 3., bctest.m, bctest.f, seawater, bctest.dz, bctest.dt)
-    
-    @test warmbased[1] ≈ 19.246453546453548
-    @test warmbased[2] ≈ -0.0006593406593406596
-    
-    coldbased = PorewaterDiffusion.boundaryconditions(seawater..., 2., 1., 3., bctest.m, bctest.f, seawater, bctest.dz, bctest.dt)
-    
-    @test coldbased[1] ≈ 19.267626762676265
-    @test coldbased[2] ≈ -0.33015900795053005
+@test Seawater(1,2).Cl == Seawater(1.,2.).Cl
+@test AND1B().O == -0.33 && AND1B().Cl == 19.2657
+@test AND2A().O == -1.0 && AND2A().Cl == 19.81655
 
+@test length(PorewaterProperty(4).i) == 4
+@test PorewaterProperty(2,1).o == PorewaterProperty([1.,1.],[1.,1.]).o
+
+@test length(SedimentColumn(4).Cl.i) == 4
+@test SedimentColumn(4, 1., 1., 1.).rho.o == SedimentColumn(PorewaterProperty(4,1.),PorewaterProperty(4,1.),PorewaterProperty(4,1.)).rho.o
 end
+
+@testset "diffusion" begin include("diffuse.jl") end
