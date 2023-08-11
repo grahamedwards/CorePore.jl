@@ -1,15 +1,15 @@
-seawater = AND1B()
+sw = AND1B()
 bctest = (dt=10.,dz=5.,m=2e-4, f=2e-5)
     
     
-@test PorewaterDiffusion.boundaryconditions(0., 0., .4, 1., 3., bctest.m, bctest.f, seawater..., bctest.dz, bctest.dt) == (seawater.cCl,seawater.d18O)
+@test PorewaterDiffusion.boundaryconditions(0., 0., .4, 1., 3., bctest.m, bctest.f, sw.Cl, sw.O, bctest.dz, bctest.dt) == (sw.Cl,sw.O)
     
-warmbased = PorewaterDiffusion.boundaryconditions(seawater..., 4., 1., 3., bctest.m, bctest.f, seawater..., bctest.dz, bctest.dt)
+warmbased = PorewaterDiffusion.boundaryconditions(sw.Cl, sw.O, 4., 1., 3., bctest.m, bctest.f, sw.Cl, sw.O, bctest.dz, bctest.dt)
     
 @test warmbased[1] ≈ 19.246453546453548
 @test warmbased[2] ≈ -0.36963036963036966
     
-coldbased = PorewaterDiffusion.boundaryconditions(seawater..., 2., 1., 3., bctest.m, bctest.f, seawater..., bctest.dz, bctest.dt)
+coldbased = PorewaterDiffusion.boundaryconditions(sw.Cl, sw.O, 2., 1., 3., bctest.m, bctest.f, sw.Cl, sw.O, bctest.dz, bctest.dt)
     
 @test coldbased[1] ≈ 19.267626762676265
 @test coldbased[2] ≈ -0.33015900795053005
