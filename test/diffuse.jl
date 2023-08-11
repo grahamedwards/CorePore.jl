@@ -17,3 +17,27 @@ coldbased = PorewaterDiffusion.boundaryconditions(seawater..., 2., 1., 3., bctes
 
 @test PorewaterDiffusion.velocity(2.,4.,.1) ≈ 0.1 
 @test PorewaterDiffusion.density(1) ≈ 1.0018
+
+
+
+## Test diffusion calculations
+
+k=constants(k=0.1, dz=5, dt=10, depth=2000)
+seawater = AND2A()
+sc = SedimentColumn(k.nz,seawater.Cl, seawater.O)
+
+sc.Cl.o[1] *= 1.2
+sc.O.o[1] *= 1.2
+sc.rho.o[1] = density(sc.Cl.o[1])
+
+Cltest = diffusionadvection(sc.Cl.o[2], sc.Cl.o[1], sc.Cl.o[3], k.k1cl[2], k.k2cl[2], PorewaterDiffusion.velocity(sc.rho.o[2],sc.rho.o[1],k.k),k.dt,k.dz) 
+
+d18Otest = diffusionadvection(sc.O.o[2], sc.O.o[1], sc.O.o[3], k.k1w[2], k.k2w[2], PorewaterDiffusion.velocity(sc.rho.o[2],sc.rho.o[1],k.k),k.dt,k.dz) 
+
+diffuseadvectcolumn!(sc,k)
+
+@test Cltest ≈ 19.970844957241017
+@test d18Otest ≈ -1.0082012433725027
+
+@test sc.Cl.o[2] == sc.Cl.p[2] ≈ Cltest
+@test sc.O.o[2] == sc.O.o[2] ≈ d18Otest

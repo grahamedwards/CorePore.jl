@@ -99,18 +99,18 @@ see also: [`SedimentColumn`](@ref), [`constants`](@ref)
 """
 function diffuseadvectcolumn!(sc::SedimentColumn, k::NamedTuple)
 
-    for i = k.interiornodes
+    @inbounds for i = k.interiornodes
 
         above = i-1
         below = i+1
 
         vdtdz = velocity(sc.rho.o[i], sc.rho.o[above],k.k) * k.dtdz
 
-        sc.Cl.p[i] = diffusionadvection(sc.Cl.o[i],sc.Cl.o[above], sc.Cl.o[below], sc.k1cl[i],sc.k2cl[i],vdtdz) 
+        sc.Cl.p[i] = diffusionadvection(sc.Cl.o[i],sc.Cl.o[above], sc.Cl.o[below], k.k1cl[i], k.k2cl[i], vdtdz) 
 
         sc.rho.p[i] = density(sc.Cl.p[i])
 
-        sc.O.p[i] = diffusionadvection(sc.O.o[i],sc.O.o[above], sc.O.o[below], sc.k1w[i], sc.k2w[i], vdtdz) 
+        sc.O.p[i] = diffusionadvection(sc.O.o[i],sc.O.o[above], sc.O.o[below], k.k1w[i], k.k2w[i], vdtdz) 
     end
 
 # set bottom value to penultimate value
