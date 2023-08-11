@@ -11,7 +11,7 @@ using Test
 @test PorewaterProperty(2,1).o == PorewaterProperty([1.,1.],[1.,1.]).o
 
 @test length(SedimentColumn(4).Cl.p) == 4
-@test SedimentColumn(4, 1., 1., 1.).rho.o == SedimentColumn(PorewaterProperty(4,1.),PorewaterProperty(4,1.),PorewaterProperty(4,1.)).rho.o
+@test SedimentColumn(4, 1., 1.,).rho.o == SedimentColumn(PorewaterProperty(4,1.),PorewaterProperty(4,1.),PorewaterProperty(4,PorewaterDiffusion.density(1.))).rho.o
 
 lr04test = LR04()
 @test first(lr04test.t) == 5320.

@@ -68,13 +68,13 @@ end
 
 """
 
-    SedimentColumn(n::Int, [, Cl, O, rho])
+    SedimentColumn(n::Int, [, Cl, O])
 
 `struct` to contain `PorewaterProperty`s for the porewater properties of [Cl⁻] (`Cl`), δ¹⁸O (`O`), and density (`rho`).
 
 Constructor function returns an instance of `SedimentColumn` with `PorewaterProperty` vectors of length `n`.  Optionally provide values for `Cl`, `O`, and `rho` (otherwise values are undefined). 
 
-see also: [`PorewaterProperty`](@ref)
+see also: [`PorewaterProperty`](@ref), [`density`](@ref)
 
 """
 struct SedimentColumn
@@ -85,7 +85,7 @@ end
 
 SedimentColumn(n::Int) = SedimentColumn(PorewaterProperty(n), PorewaterProperty(n), PorewaterProperty(n))
 
-SedimentColumn(n::Int, c::Number, o::Number, r::Number) = SedimentColumn(PorewaterProperty(n,c), PorewaterProperty(n,o), PorewaterProperty(n,r))
+SedimentColumn(n::Int, c::Number, o::Number) = SedimentColumn(PorewaterProperty(n,c), PorewaterProperty(n,o), PorewaterProperty(n,density(c)))
 
 
 
