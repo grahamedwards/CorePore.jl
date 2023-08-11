@@ -1,4 +1,4 @@
-seawater = (cCl =19.2657, d18O = -0.3300)
+seawater = AND1B()
 bctest = (dt=10.,dz=5.,m=2e-4, f=2e-5)
     
     

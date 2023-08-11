@@ -7,18 +7,18 @@
 """
 
 ```julia
-function boundaryconditions(Cl, d18O, x, ocean2freeze,freeze2melt, meltrate, freezerate, seawater, dz, dt)
+function boundaryconditions(Cl, d18O, x, sea2freeze,freeze2melt, meltrate, freezerate, seawater, dz, dt)
 ```
-Calculates sediment surface boundary condition for δ¹⁸O (`d18O`) and [Cl⁻] (`Cl`), based on the thermodynamic state described by the current current benthic δ¹⁸O value `x` and the threshold values corresponding to subglacial freezing `ocean2freeze` and subglacial melting `freeze2melt`.
+Calculates sediment surface boundary condition for δ¹⁸O (`d18O`) and [Cl⁻] (`Cl`), based on the thermodynamic state described by the current current benthic δ¹⁸O value `x` and the threshold values corresponding to subglacial freezing `sea2freeze` and subglacial melting `freeze2melt`.
 
 For melting or freezing states, calculates boundary condition from the assumed `meltrate`, `freezerate`, timestep `dt`, length-step `dt`, and composition of seawater `Clsw` and `d18Osw`.
 
 """
-function boundaryconditions(Cl, d18O, x, ocean2freeze,freeze2melt, meltrate, freezerate, Clsw, d18Osw, dz, dt)
+function boundaryconditions(Cl, d18O, x, sea2freeze, freeze2melt, meltrate, freezerate, Clsw, d18Osw, dz, dt)
     
-    @assert ocean2freeze <= freeze2melt
+    @assert sea2freeze <= freeze2melt
     
-    if x < ocean2freeze # low δ18O -> warm -> seawater
+    if x < sea2freeze # low δ18O -> warm -> seawater
         Cl = Clsw
         d18O = d18Osw
 

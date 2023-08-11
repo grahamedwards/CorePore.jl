@@ -108,7 +108,7 @@ function LR04()
     @assert a[2,1] - a[1,1] ≈ 1
     t = a[end,1] : -1 : a[1,1]
     x = reverse(a[:,2])
-    (; t, x)
+    (; t, x, n=length(t))
 end
 
 
@@ -162,3 +162,27 @@ function constants(; k::Number=0.1, dt::Number=10., dz::Number=5.,  depth::Numbe
 
     (; k, dz, dt, dtdz = dt*dz, depth, nz, k1cl, k2cl, k1w, k2w, interiornodes=2:nz-1)
 end 
+
+
+"""
+
+    Proposals(onset, dfrz, dmlt, sea2frz, frz2mlt)
+
+Mutable custom type to hold proposed parameters. 
+
+| field | description | units |
+| :---- | :---------- | :----
+|`onset`| onset of model | ka |
+| `dfrz`| freezing rate | m/yr |
+| `dmlt`| melting rate | m/yr |
+| `sea2frz` | Benthic δ¹⁸O threshold for subglacial freezing | ‰ |
+| `frz2mlt` | Benthic δ¹⁸O threshold for subglacial melting | ‰ |
+
+"""
+mutable struct Proposal
+    onset::Float64
+    dfrz::Float64
+    dmlt::Float64
+    sea2frz::Float64
+    frz2mlt::Float64
+end
