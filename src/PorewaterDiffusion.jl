@@ -8,6 +8,6 @@ include("parameters.jl")
 export density, diffusionadvection, diffuseadvectcolumn!
 include("diffuse.jl")
 
-export porewater 
-include("time.jl")
+export porewaterhistory, porewaterhistory!
+include("history.jl")
 end
