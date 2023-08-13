@@ -13,7 +13,7 @@ core=2;
 
 % load in benthic stack data
 % use for setting boundaries for seawater/melting/freezing
-Benthic=readmatrix('LR04stack.csv','range','A6:B2120');
+Benthic=readmatrix('../data/LR04stack.csv','range','A6:B2120');
 
 % flip matrix so that the first element is 5320 ka
 Benthic_rev=flipud(Benthic);
@@ -185,16 +185,16 @@ end
 
 % account for density driven vertical flow of brine in sediments
     rho=((C_Cl(:,1).*0.0018)+1)*1000; % fluid density
-    if rho(i-1)<rho(i)
-        v=0;
-    else
-        v=k.*(rho(i-1)-rho(i))./rho(i); % vertical velocity
-    end
+
 
 %% Turn each diffusion calculation into a function.
 % run diffusion model
 for i = 2:(nz-1)
-    
+    if rho(i-1)<rho(i)
+        v=0;
+    else
+        v=k.*(rho(i-1)-rho(i))./rho(i); % vertical velocity
+    end    
     % diffusion is depth-dependent
     C_Cl(i,2) = C_Cl(i,1) + coeff_Cl(i)*(C_Cl(i-1,1)-2*C_Cl(i,1)+C_Cl(i+1,1)) + coeff2_Cl(i)*(C_Cl(i-1,1)-C_Cl(i,1)) - (v*dt*dz)*(C_Cl(i,1)-C_Cl(i-1,1));
     C_d18O(i,2) = C_d18O(i,1) + coeff_d18O(i)*(C_d18O(i-1,1)-2*C_d18O(i,1)+C_d18O(i+1,1)) + coeff2_d18O(i)*(C_d18O(i-1,1)-C_d18O(i,1)) - (v*dt*dz)*(C_d18O(i,1)-C_d18O(i-1,1));
@@ -222,7 +222,7 @@ toc
 % same as above, but this time with functions
 
 
-% addpath('functions/')
+addpath('functions/')
 
 tic
 
@@ -251,7 +251,7 @@ end
 
 % load in benthic stack data
 % use for setting boundaries for seawater/melting/freezing
-load Benthic_interp.mat
+Benthic_interp = load ('../data/LR04-interpolated-1ka.csv');
 
 % flip matrix so that the first element is 5320 ka
 Benthic=flipud(Benthic_interp); 
