@@ -2,40 +2,36 @@
 
 """
 
-    Seawater(Cl, O)
+    seawater(Cl, O)
 
-Custom struct to hold chlorinity `Cl` and δ¹⁸O `O` values (necessarily `Float64`s). 
+Returns a NamedTuple with values of chlorinity `Cl` and δ¹⁸O `O`(necessarily `Float64`s). 
 
 see also: [`AND1B`](@ref), [`AND2A`](@ref)
 
 """
 
-struct Seawater
-    Cl::Float64
-    O::Float64
-end
+seawater(Cl::Number,O::Number) = (; Cl=float(Cl), O=float(O))
 
-Seawater(cl::Number,o::Number) = Seawater(float(cl),float(o))
 
 """
     AND1B()
 
-Generate a `Seawater` instance with coretop values of ANDRILL-1B.
+Generate a [`seawater`](@ref) NamedTuple with coretop values of ANDRILL-1B.
 
-see also: [`Seawater`](@ref)
+see also: [`seawater`](@ref)
 
 """
-AND1B() = Seawater(19.2657,-0.33)
+AND1B() = seawater(19.2657,-0.33)
 
 """
     AND2A()
 
-Generate a `Seawater` instance with coretop values of ANDRILL-2A.
+    Generate a [`seawater`](@ref) NamedTuple with coretop values of ANDRILL-2A.
 
-see also: [`Seawater`](@ref)
+see also: [`seawater`](@ref)
 
 """
-AND2A() = Seawater(19.81655,-1.0)
+AND2A() = seawater(19.81655,-1.0)
 
 
 

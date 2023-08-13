@@ -1,4 +1,4 @@
-@test Seawater(1,2).Cl == Seawater(1.,2.).Cl
+@test seawater(1,2).Cl == seawater(1.,2.).Cl
 @test AND1B().O == -0.33 && AND1B().Cl == 19.2657
 @test AND2A().O == -1.0 && AND2A().Cl == 19.81655
 

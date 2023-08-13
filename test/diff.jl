@@ -2,14 +2,14 @@ sw = AND1B()
 bctest = (dt=10.,dz=5.,m=2e-4, f=2e-5)
     
     
-@test PorewaterDiffusion.boundaryconditions(0., 0., .4, 1., 3., bctest.m, bctest.f, sw.Cl, sw.O, bctest.dz, bctest.dt) == (sw.Cl,sw.O)
+@test PorewaterDiffusion.boundaryconditions(0., 0., .4, 1., 3., bctest.m, bctest.f, sw..., bctest.dz, bctest.dt) == (sw...,)
     
-warmbased = PorewaterDiffusion.boundaryconditions(sw.Cl, sw.O, 4., 1., 3., bctest.m, bctest.f, sw.Cl, sw.O, bctest.dz, bctest.dt)
+warmbased = PorewaterDiffusion.boundaryconditions(sw..., 4., 1., 3., bctest.m, bctest.f, sw..., bctest.dz, bctest.dt)
     
 @test warmbased[1] ≈ 19.246453546453548
 @test warmbased[2] ≈ -0.36963036963036966
     
-coldbased = PorewaterDiffusion.boundaryconditions(sw.Cl, sw.O, 2., 1., 3., bctest.m, bctest.f, sw.Cl, sw.O, bctest.dz, bctest.dt)
+coldbased = PorewaterDiffusion.boundaryconditions(sw..., 2., 1., 3., bctest.m, bctest.f, sw..., bctest.dz, bctest.dt)
     
 @test coldbased[1] ≈ 19.267626762676265
 @test coldbased[2] ≈ -0.33015900795053005
@@ -23,8 +23,8 @@ coldbased = PorewaterDiffusion.boundaryconditions(sw.Cl, sw.O, 2., 1., 3., bctes
 ## Test diffusion calculations
 
 k=constants(k=0.1, dz=5, dt=10, depth=2000)
-seawater = AND2A()
-sc = SedimentColumn(k.nz,seawater.Cl, seawater.O)
+sw = AND2A()
+sc = SedimentColumn(k.nz,sw...)
 
 sc.Cl.o[1] *= 1.2
 sc.O.o[1] *= 1.2

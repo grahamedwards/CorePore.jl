@@ -7,7 +7,7 @@
 """
 
 ```julia
-function boundaryconditions(Cl, d18O, x, sea2freeze,freeze2melt, meltrate, freezerate, seawater, dz, dt)
+function boundaryconditions(Cl, d18O, x, sea2freeze,freeze2melt, meltrate, freezerate, Clsw, d18Osw, dz, dt)
 ```
 Calculates sediment surface boundary condition for δ¹⁸O (`d18O`) and [Cl⁻] (`Cl`), based on the thermodynamic state described by the current current benthic δ¹⁸O value `x` and the threshold values corresponding to subglacial freezing `sea2freeze` and subglacial melting `freeze2melt`.
 
@@ -114,8 +114,8 @@ function diffuseadvectcolumn!(sc::SedimentColumn, k::NamedTuple)
     end
 
 # set bottom value to penultimate value
-    sc.O.p[k.nz] = sc.O.p[k.nz-1]
-    sc.Cl.p[k.nz] = sc.Cl.p[k.nz-1]
+    sc.O.p[k.nz] = sc.O.p[last(k.interiornodes)]
+    sc.Cl.p[k.nz] = sc.Cl.p[last(k.interiornodes)]
 
 # And time steps forward, replacing o with p.
     sc.O.o .= sc.O.p
