@@ -48,13 +48,12 @@ See [`diffuseadvectcolumn!`](@ref) for the underlying diffusion-advection transp
 see also: [`porewaterhistory!`](@ref), [`Proposal`](@ref), [`constants`](@ref), [`LR04`](@ref), [`seawater`](@ref)
 
 """
-function porewaterhistory(p::Proposal; k::NamedTuple=constants(), climhist::NamedTuple=LR04(), sw::NamedTuple=AND2A())
+function porewaterhistory(p::Proposal; k::NamedTuple=constants(), climatehistory::NamedTuple=LR04(), seawater::NamedTuple=AND2A())
 
-    ka_dt =  round(Int,1000abs(step(climhist.t))/k.dt)
-    sc = SedimentColumn(k.nz,sw.Cl, sw.O)
-    porewaterhistory!(sc, p, k, climhist, sw, ka_dt)
+    sc = SedimentColumn(k.nz,seawater...)
+    x= porewaterhistory!(sc, p, k, climatehistory, seawater, dt_climatetimestep(climatehistory.t,k.dt))
 
-    sc
+    x
 end
 
 
