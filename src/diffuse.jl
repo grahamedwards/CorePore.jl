@@ -14,16 +14,15 @@ Calculates sediment surface boundary condition for δ¹⁸O (`d18O`) and [Cl⁻]
 For melting or freezing states, calculates boundary condition from the assumed `meltrate`, `freezerate`, timestep `dt`, length-step `dt`, and composition of seawater `Clsw` and `d18Osw`.
 
 """
-function boundaryconditions(Cl, d18O, x, sea2freeze, freeze2melt, meltrate, freezerate, Clsw, d18Osw, dz, dt)
+function boundaryconditions(Cl::Float64, d18O::Float64, x, sea2freeze, freeze2melt, meltrate, freezerate, Clsw, d18Osw, dz, dt)
     
-    @assert sea2freeze <= freeze2melt
+    @assert sea2freeze < freeze2melt
     
     if x < sea2freeze # low δ18O -> warm -> seawater
-        Cl = Clsw
-        d18O = d18Osw
+        Cl, d18O = Clsw, d18Osw
 
-    elseif x > freeze2melt # high δ18O -> cold -> warm-based
-        ϕdz = dz*0.4
+    elseif x >= freeze2melt # high δ18O -> cold -> warm-based
+        ϕdz = 0.4dz
         melt = meltrate * dt
         
         Cl *= ϕdz / (ϕdz + melt)
@@ -36,7 +35,8 @@ function boundaryconditions(Cl, d18O, x, sea2freeze, freeze2melt, meltrate, free
         Cl *= ϕdz / (ϕdz - frz) 
         d18O +=  1.59 * log(1 - (frz / ϕdz)) # simplified from eqn 2 of Toyota et al. (2017)
     end
-    (Cl, d18O)
+    
+    (Cl, d18O, density(Cl))
 end
 
 
@@ -57,7 +57,7 @@ diffusionadvection(x,above,below,k1,k2,vdtdz) = x + k1 * (above - 2x + below) + 
 
     density(chlorinity)
 
-Calculates the density of a water parcel with `chlorinity` in units g/m³ (rather than g/m³ for convenience with `velocity`)
+Calculates the density of a water parcel with `chlorinity` in units g/m³ (rather than kg/m³ for convenience with `velocity`)
 
 see also: [`velocity`](@ref)
 
@@ -77,7 +77,7 @@ Calculate the velocity (m/yr) at a node with density `x`, given the density of t
 see also: [`density`](@ref)
 
 """
-velocity(x, above, k) = k * (above - x) / x
+velocity(x, above, k) = ifelse(above < x, zero(x), k * (above - x) / x)
 
 
 
@@ -99,7 +99,10 @@ see also: [`SedimentColumn`](@ref), [`constants`](@ref)
 """
 function diffuseadvectcolumn!(sc::SedimentColumn, k::NamedTuple)
 
-    @inbounds for i = k.interiornodes
+    sc.Cl.p[1] = sc.Cl.o[1]
+    sc.O.p[1] = sc.O.o[1]
+
+    @inbounds @simd for i = 2:k.penultimate_node
 
         above = i-1
         below = i+1
@@ -113,9 +116,10 @@ function diffuseadvectcolumn!(sc::SedimentColumn, k::NamedTuple)
         sc.O.p[i] = diffusionadvection(sc.O.o[i],sc.O.o[above], sc.O.o[below], k.k1w[i], k.k2w[i], vdtdz) 
     end
 
-# set bottom value to penultimate value
-    sc.O.p[k.nz] = sc.O.p[last(k.interiornodes)]
-    sc.Cl.p[k.nz] = sc.Cl.p[last(k.interiornodes)]
+# set bottom values to penultimate values
+    sc.O.p[k.nz] = sc.O.p[k.penultimate_node]
+    sc.Cl.p[k.nz] = sc.Cl.p[k.penultimate_node]
+    sc.rho.p[k.nz] = sc.rho.p[k.penultimate_node]
 
 # And time steps forward, replacing o with p.
     sc.O.o .= sc.O.p

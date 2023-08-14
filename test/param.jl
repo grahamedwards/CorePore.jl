@@ -16,7 +16,7 @@ ktest = constants(k=0.1, dz=5, dt=10, depth=2000)
 
 @test ktest.depth == 2000.
 @test ktest.dtdz == 5. * 10.
-@test last(ktest.interiornodes) == ktest.nz-1
+@test ktest.penultimate_node == ktest.nz-1
 @test ktest.nz == 401
 @test first(ktest.k1w) ≈ 0.006126451459331848
 @test first(ktest.k1cl) ≈ 0.004187765579838535

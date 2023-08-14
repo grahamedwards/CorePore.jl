@@ -156,7 +156,7 @@ function constants(; k::Number=0.1, dt::Number=10., dz::Number=5.,  depth::Numbe
         k2w[i] = (κwater[i] - κwater[i-1]) * x 
     end
 
-    (; k, dz, dt, dtdz = dt*dz, depth, nz, k1cl, k2cl, k1w, k2w, interiornodes=2:nz-1)
+    (; k, dz, dt, dtdz = dt*dz, depth, nz, k1cl, k2cl, k1w, k2w, penultimate_node=nz-1)
 end 
 
 

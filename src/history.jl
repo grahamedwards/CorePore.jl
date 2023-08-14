@@ -1,7 +1,7 @@
 """
 
 ```julia
-porewaterhistory!(sc::SedimentColumn, p::Proposal, k::NamedTuple, climhist::NamedTuple, sw::Seawater, ka_dt::Int)
+porewaterhistory!(sc::SedimentColumn, p::Proposal, k::NamedTuple, climhist::NamedTuple, sw::NamedTuple, ka_dt::Int)
 ```
 
 In-place version of [`porewaterhistory`](@ref), which takes every input as an arg (rather than some defaults as kwargs). It also requires you to provide `ka_dt` -- the number of diffusion timesteps in each thousand-year climate timestep.
@@ -9,20 +9,24 @@ In-place version of [`porewaterhistory`](@ref), which takes every input as an ar
 see also: [`porewaterhistory`](@ref)
 
 """
-function porewaterhistory!(sc::SedimentColumn, p::Proposal, k::NamedTuple, climhist::NamedTuple, sw::Seawater, ka_dt::Int)
-
+function porewaterhistory!(sc::SedimentColumn, p::Proposal, k::NamedTuple, climhist::NamedTuple, sw::NamedTuple, ka_dt::Int)
+    
     isd = searchsortedfirst(climhist.t, p.onset, rev=true)
-
-    isd = ifelse(isd<climhist.n, isd, climhist.n)
-
+    #isd = ifelse(isd<climhist.n, isd, climhist.n)
     @inbounds for t = isd:climhist.n
+        benthic = climhist.x[t]
 
-        PorewaterDiffusion.boundaryconditions(sc.Cl.o[1], sc.O.o[1], climhist.x[t], p.sea2frz, p.frz2mlt, p.dmlt, p.dfrz, sw.Cl, sw.O, k.dz, k.dt)
+        @inbounds for j = 1:ka_dt
 
-        @inbounds for j = Base.OneTo(ka_dt)
+            Clo, Oo, ρ = boundaryconditions(sc.Cl.o[1], sc.O.o[1], benthic, p.sea2frz, p.frz2mlt, p.dmlt, p.dfrz, sw.Cl, sw.O, k.dz, k.dt)
+
+
+            sc.Cl.o[1], sc.O.o[1], sc.rho.o[1] = Clo, Oo, ρ
+            
             diffuseadvectcolumn!(sc,k)
         end
     end
+    (; Cl = sc.Cl.p, d18O = sc.O.p)
 end
 
 
@@ -41,10 +45,10 @@ The provided `proposals` (as custom type [`Proposal`](@ref)) describe the sensit
 
 See [`diffuseadvectcolumn!`](@ref) for the underlying diffusion-advection transport calculations.
 
-see also: [`porewaterhistory!`](@ref), [`Proposal`](@ref), [`constants`](@ref), [`LR04`](@ref), [`Seawater`](@ref)
+see also: [`porewaterhistory!`](@ref), [`Proposal`](@ref), [`constants`](@ref), [`LR04`](@ref), [`seawater`](@ref)
 
 """
-function porewaterhistory(p::Proposal; k::NamedTuple=constants(), climhist::NamedTuple=LR04(), sw::Seawater=AND2A())
+function porewaterhistory(p::Proposal; k::NamedTuple=constants(), climhist::NamedTuple=LR04(), sw::NamedTuple=AND2A())
 
     ka_dt =  round(Int,1000abs(step(climhist.t))/k.dt)
     sc = SedimentColumn(k.nz,sw.Cl, sw.O)

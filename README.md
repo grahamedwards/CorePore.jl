@@ -9,5 +9,7 @@ Diffusive evolution of porewater chemistry in a marine sediment column with chan
 
 Based on model framework of [Neuhaus & Tulaczyk 2023](https://doi.org/10.1017/aog.2023.28).
 
-🚧 Originally written in MATLAB, currently converting into [Julia](https://julialang.org/) 🚧
+Translated into [Julia](https://julialang.org/) from the original MATLAB for speed 🚀
+
+🚧 Core physical models complete. Statistical framework under construction. 🚧
 
