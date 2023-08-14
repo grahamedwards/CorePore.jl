@@ -164,7 +164,7 @@ end
 
     Proposals(onset, dfrz, dmlt, sea2frz, frz2mlt)
 
-Mutable custom type to hold proposed parameters. 
+Immutable struct to hold proposed parameters. 
 
 | field | description | units |
 | :---- | :---------- | :----
@@ -175,10 +175,24 @@ Mutable custom type to hold proposed parameters.
 | `frz2mlt` | Benthic δ¹⁸O threshold for subglacial melting | ‰ |
 
 """
-mutable struct Proposal
+struct Proposal
     onset::Float64
     dfrz::Float64
     dmlt::Float64
     sea2frz::Float64
     frz2mlt::Float64
 end
+
+
+function update(x::Proposal, f::Symbol,v::Number)
+
+    o = ifelse(f==:onset, v, x.onset)
+    df = ifelse(f==:dfrz, v, x.dfrz)
+    dm = ifelse(f==:dmlt, v, x.dmlt)
+    s = ifelse(f==:sea2frz, v, x.sea2frz)
+    f = ifelse(f==:frz2mlt, v, x.frz2mlt)
+    
+    Proposal(o,df,dm,s,f)
+end
+
+

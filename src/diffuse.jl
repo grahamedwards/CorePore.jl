@@ -16,8 +16,6 @@ For melting or freezing states, calculates boundary condition from the assumed `
 """
 function boundaryconditions(Cl::Float64, d18O::Float64, x, sea2freeze, freeze2melt, meltrate, freezerate, Clsw, d18Osw, dz, dt)
     
-    @assert sea2freeze < freeze2melt
-    
     if x < sea2freeze # low δ18O -> warm -> seawater
         Cl, d18O = Clsw, d18Osw
 

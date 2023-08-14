@@ -1,5 +1,8 @@
 using PorewaterDiffusion
 using Test
+using StableRNGs
+
+
 
 @testset "custom types" begin include("param.jl") end 
 

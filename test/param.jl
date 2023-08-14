@@ -22,3 +22,12 @@ ktest = constants(k=0.1, dz=5, dt=10, depth=2000)
 @test first(ktest.k1cl) ≈ 0.004187765579838535
 @test last(ktest.k2cl) ≈ 0.0021567190997326957
 @test last(ktest.k2w) ≈ 0.0030695870568939743
+
+
+proposaltest = Proposal(1,1,1,1,1)
+@test update(proposaltest, :onset, 2.) == Proposal(2,1,1,1,1)
+@test update(proposaltest, :dfrz, 2.) == Proposal(1,2,1,1,1)
+@test update(proposaltest, :dmlt, 2.) == Proposal(1,1,2,1,1)
+@test update(proposaltest, :sea2frz, 2.) == Proposal(1,1,1,2,1)
+@test update(proposaltest, :frz2mlt, 2.) == Proposal(1,1,1,1,2)
+

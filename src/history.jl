@@ -26,7 +26,6 @@ function porewaterhistory!(sc::SedimentColumn, p::Proposal, k::NamedTuple, climh
             diffuseadvectcolumn!(sc,k)
         end
     end
-    (; Cl = sc.Cl.p, d18O = sc.O.p)
 end
 
 
@@ -51,9 +50,9 @@ see also: [`porewaterhistory!`](@ref), [`Proposal`](@ref), [`constants`](@ref), 
 function porewaterhistory(p::Proposal; k::NamedTuple=constants(), climatehistory::NamedTuple=LR04(), seawater::NamedTuple=AND2A())
 
     sc = SedimentColumn(k.nz,seawater...)
-    x= porewaterhistory!(sc, p, k, climatehistory, seawater, dt_climatetimestep(climatehistory.t,k.dt))
+    porewaterhistory!(sc, p, k, climatehistory, seawater, dt_climatetimestep(climatehistory.t,k.dt))
 
-    x
+    (; Cl = sc.Cl.p, d18O = sc.O.p)
 end
 
 
