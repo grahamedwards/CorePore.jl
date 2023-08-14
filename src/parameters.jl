@@ -117,9 +117,9 @@ end
     constants( ; k, dt, dz, depth )
 ````
 
-Returns a NamedTuple of constants and coefficients used in diffusion history calculations. The input constants and their default values are listed in the table below. From these it calculates a few convenience variables: the number of nodes `nz`, a range of `interiornodes`,  and the product `dtdz`. 
+Returns a NamedTuple of constants and coefficients used in diffusion history calculations. The input constants and their default values are listed in the table below. From these it calculates a few convenient variables: the product `dt * dz` (`dtdz`), a Range of node depths `z` (in m), the number of nodes `nz`, and the `penultimate_node`. 
 
-Using the constants, it calculates the number of nodes  as well as temperature-dependent diffusion coefficients used in `diffusionadvection`, using the temperature-depth paramterization of [Morin+ 2010](https://doi.org/10.1130/GES00512.1). These are returned as Vectors of length `nz`, where each cell corresponds to a depth node. The two coefficients are `k1` and `k2`, both of which are follwed with `cl` or `w` to denote Cl⁻ or water, respectively: `k1cl`, `k2cl`, `k1w`, and `k2w`.
+Using the constants, it calculates the temperature-dependent diffusion coefficients used in `diffusionadvection`, using the temperature-depth paramterization of [Morin+ 2010](https://doi.org/10.1130/GES00512.1). These are returned as Vectors of length `nz`, where each cell corresponds to a depth node in `z`. The two coefficients are `k1` and `k2`, both of which are follwed with `cl` or `w` to denote Cl⁻ or water, respectively: `k1cl`, `k2cl`, `k1w`, and `k2w`.
 
 | field | description | default |
 | :---- | :---------- | ----: |
@@ -156,7 +156,7 @@ function constants(; k::Number=0.1, dt::Number=10., dz::Number=5.,  depth::Numbe
         k2w[i] = (κwater[i] - κwater[i-1]) * x 
     end
 
-    (; k, dz, dt, dtdz = dt*dz, depth, nz, k1cl, k2cl, k1w, k2w, penultimate_node=nz-1)
+    (; k, dz, dt, depth, dtdz = dt*dz, z, nz, penultimate_node=nz-1, k1cl, k2cl, k1w, k2w)
 end 
 
 
