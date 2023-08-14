@@ -9,4 +9,8 @@ include("diffuse.jl")
 
 export porewaterhistory, porewaterhistory!
 include("history.jl")
+
+#export 
+include("statistics.jl")
+
 end
