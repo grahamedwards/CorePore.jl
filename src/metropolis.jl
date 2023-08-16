@@ -74,6 +74,7 @@ function porewatermetropolis(p::Proposal, jumpsize::Proposal, prior::NamedTuple;
 
     chains = Matrix{Float64}(undef, length(fieldnames(Proposal)), chainsteps)
     lldist = Vector{Float64}(undef, chainsteps)
+    acceptance = falses(chainsteps)
 
     sc = SedimentColumn(k.nz,seawater...)
     ka_dt = PorewaterDiffusion.dt_climatetimestep(benthic.t,k.dt)
@@ -126,7 +127,8 @@ function porewatermetropolis(p::Proposal, jumpsize::Proposal, prior::NamedTuple;
         if log(rand(rng)) < (llϕ-ll) 
             jumpsize = update(jumpsize,jumpname,abs(jump)*scalejump) # update jumpsize
             p = ϕ  # update proposal
-            ll = llϕ # Record new log likelihood              
+            ll = llϕ # Record new log likelihood   
+            acceptance[i] = true           
         end
 
         chains[:,i] .= p.onset, p.dfrz, p.dmlt, p.sea2frz, p.frz2mlt
@@ -134,8 +136,8 @@ function porewatermetropolis(p::Proposal, jumpsize::Proposal, prior::NamedTuple;
 
         iszero(i % 500) && println("Main Chain --- ", stopwatch(i,chainsteps,clock))
     end
-    outnames = (fieldnames(Proposal)...,:ll)
-    outvalues = ((chains[i,:] for i in axes(chains,1))..., lldist)
+    outnames = (fieldnames(Proposal)...,:ll, :accept)
+    outvalues = ((chains[i,:] for i in axes(chains,1))..., lldist, acceptance)
     NamedTuple{outnames}(outvalues)
 end
 
