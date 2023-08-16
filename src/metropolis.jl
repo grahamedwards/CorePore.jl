@@ -83,6 +83,7 @@ function porewatermetropolis(p::Proposal, jumpsize::Proposal, prior::NamedTuple;
     ll= loglikelihood(prior.z,prior.Cl.mu,prior.Cl.sig,k.z,sc.Cl.p) + loglikelihood(prior.z,prior.O.mu,prior.O.sig,k.z,sc.O.p)
 
     clock = time()
+    println("Beginning sequence...\n  $burnin burn-in iterations \n  $chainsteps recorded iterations\n ------------ \n\n " )
     @inbounds for i=Base.OneTo(burnin)
 
         ϕ, jumpname,jump = proposaljump(p, jumpsize)
@@ -104,6 +105,8 @@ function porewatermetropolis(p::Proposal, jumpsize::Proposal, prior::NamedTuple;
         iszero(i % 500) && println("Burn-In --- ", stopwatch(i,burnin,clock))
     end
 
+    println(burnin," burn-in steps complete. Current guess: ",p,", ℓ = $ll" )
+
     @inbounds for i=Base.OneTo(chainsteps)
 
         ϕ, jumpname,jump = proposaljump(p, jumpsize)
@@ -113,10 +116,8 @@ function porewatermetropolis(p::Proposal, jumpsize::Proposal, prior::NamedTuple;
 
             llCl = loglikelihood(prior.z,prior.Cl.mu,prior.Cl.sig,k.z,sc.Cl.p) 
             llO = loglikelihood(prior.z,prior.O.mu,prior.O.sig,k.z,sc.O.p)
-
-            println("Cl: $llCl, O: $llO")
-
             llϕ = llCl + llO
+            #println("Cl: $llCl, O: $llO") # for troubleshooting.
         else
             llϕ=-Inf
         end
