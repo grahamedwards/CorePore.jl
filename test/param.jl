@@ -4,6 +4,10 @@
 
 @test isnan(coredata([1,2], [1,1], [1,1], [1., missing], [1,1]).O.mu[2])
 @test coredata([1,2], [1,1], [1,1], [1., missing], [1,1]).z == [1.0, 2.0]
+@test coredata([1,2], [1,1], [1,1], :Cl).z == [1., 2.]
+@test isempty(coredata([1,2], [1,1], [1,1], :Cl).O.mu)
+@test isempty(coredata([1,2], [1,1], [1,1], :O).Cl.mu)
+
 @test andrill2a().z[1] ≈ 9.67
 @test andrill2a().Cl.mu[1] ≈ 23.1843
 @test isnan( last( andrill2a().O.mu ) )

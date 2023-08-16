@@ -43,6 +43,14 @@ Returns a NamedTuple with sediment core data formatted for [`porewatermetropolis
 
 Vectors must all be of the same length. If Cl and δ¹⁸O sampling is not 1:1, use `NaN` or anything that is not a subtype of Number (e.g. `missing`, `nothing`). While `NaN` is used internally, `coredata` does this conversion for you.
 
+---
+
+    coredata(z, m, σ, measurement)
+
+Same as above, but for a core with only chlorinity or δ¹⁸O data (the other Vectors are empty to return null values in [`log-likelihood`](@ref) calculations). Provide sample depths `z`, measured means `m`, 1σ uncertainties `σ`, and the `measurement` as a symbol, e.g. `:Cl` or `:O`. 
+
+---
+
 `PorewaterDiffusion.jl` comes loaded with convenient functions to generate data for [`andrill2a`](@ref) from Tracy+ 2010 ([doi:10.1130/G30849.1](https://doi.org/10.1130/G30849.1)) and [`andrill1b`](@ref) from Pompilio+ 2007 (https://digitalcommons.unl.edu/andrillrespub/37). 
 
 """
@@ -58,8 +66,24 @@ function coredata(z::Vector{<:Number}, mCl::AbstractVector, σCl::AbstractVector
 
     (; z=float.(z), Cl=(mu=float.(mCl), sig = float.(σCl)), O=(mu=float.(μO), sig=float.(σO)))
 end
+function coredata(z::Vector{<:Number}, m::AbstractVector, σ::AbstractVector, s::Symbol)
+    
+    @assert length(z) == length(m) == length(σ)
+    
+    chlorine, oxygen = (:Cl, :CL, :chlorine, :chlorinity), (:O, :oxygen, :water, :d18O, :δ18O, :δ¹⁸O, :d¹⁸O) 
+    
+    @assert s ∈ (chlorine..., oxygen...)
 
+    @inbounds for i= eachindex(z)
+        m[i] = ifelse(typeof(m[i])<:Number, m[i], NaN)
+        σ[i] = ifelse(typeof(σ[i])<:Number, σ[i], NaN)
+    end
+    x = (mu=float.(m), sig = float.(σ))
+    xx = Vector{eltype(x.mu)}(undef,0)
+    xx = (mu = xx, sig = xx)
 
+    s ∈ chlorine ? (; z=float.(z), Cl=x, O=xx) : (; z=float.(z), Cl=xx, O=x)
+end
 
 
 """
