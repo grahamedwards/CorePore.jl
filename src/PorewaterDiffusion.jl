@@ -11,7 +11,10 @@ include("diffuse.jl")
 export porewaterhistory, porewaterhistory!
 include("history.jl")
 
-export porewatermetropolis
+export loglikelihood, normpdf
 include("statistics.jl")
+
+export porewatermetropolis
+include("metropolis.jl")
 
 end

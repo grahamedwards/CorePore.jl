@@ -14,21 +14,3 @@ lltest = (; zo=[0, 1.8, 2.2], muo=[.2, .42, .6], sigo = [.08, .12, .14] , zm=0:4
 
 PorewaterDiffusion.loglikelihood(Vector{Float64}(undef,0), lltest.muo, lltest.sigo, lltest.zm, lltest.m)
 #(PorewaterDiffusion.normll(lltest.muo[1],lltest.sigo[1],lltest.m[1]), PorewaterDiffusion.normll(lltest.muo[2],lltest.sigo[2],PorewaterDiffusion.linterp(lltest.zo[2], lltest.zm[3],1, lltest.m[4], lltest.m[3])), PorewaterDiffusion.normll(lltest.muo[3],lltest.sigo[3],PorewaterDiffusion.linterp(lltest.zo[3], lltest.zm[4],1, lltest.m[5],lltest.m[4])))
-
-# strictprios
-spargs = (1000., (1.,4.))
-@test PorewaterDiffusion.strictpriors(Proposal(500,1,1,2,3), spargs...)
-@test !PorewaterDiffusion.strictpriors(Proposal(1100,1,1,2,3), spargs...)
-@test !PorewaterDiffusion.strictpriors(Proposal(500,-1,1,2,3), spargs...)
-@test !PorewaterDiffusion.strictpriors(Proposal(500,1,-1,2,3), spargs...)
-@test !PorewaterDiffusion.strictpriors(Proposal(500,1,1,0,3), spargs...)
-@test !PorewaterDiffusion.strictpriors(Proposal(500,1,1,2,5), spargs...)
-
-
-# proposaljump
-pjtest = PorewaterDiffusion.proposaljump(Proposal(ones(5)...), Proposal(ones(5)...), rng=StableRNG(2580))
-pjtest[1].dfrz ≈ 1.090668193354693
-
-
-# stopwatch
-"0% |■■□□□□□□□□| 100%  ||  total: 0.0 m  ||  step: 27 / 100\n" == PorewaterDiffusion.stopwatch(27,100,time())
