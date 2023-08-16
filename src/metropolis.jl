@@ -85,6 +85,7 @@ function porewatermetropolis(p::Proposal, jumpsize::Proposal, prior::NamedTuple;
 
     clock = time()
     println("Beginning sequence...\n  $burnin burn-in iterations \n  $chainsteps recorded iterations\n ------------ \n\n " )
+    flush(stdout)
     @inbounds for i=Base.OneTo(burnin)
 
         ϕ, jumpname,jump = proposaljump(p, jumpsize)
@@ -103,10 +104,15 @@ function porewatermetropolis(p::Proposal, jumpsize::Proposal, prior::NamedTuple;
             p = ϕ  # update proposal
             ll = llϕ # Record new log likelihood              
         end
-        iszero(i % 500) && println("Burn-In --- ", stopwatch(i,burnin,clock))
+
+        if iszero(i % 500) # Update progress every 500 steps
+            println("Burn-In --- ", stopwatch(i,burnin,clock))
+            flush(stdout)
+        end
     end
 
     println(burnin," burn-in steps complete. Current guess: ",p,", ℓ = $ll" )
+    flush(stdout)
 
     @inbounds for i=Base.OneTo(chainsteps)
 
@@ -134,7 +140,11 @@ function porewatermetropolis(p::Proposal, jumpsize::Proposal, prior::NamedTuple;
         chains[:,i] .= p.onset, p.dfrz, p.dmlt, p.sea2frz, p.frz2mlt
         lldist[i] = ll
 
-        iszero(i % 500) && println("Main Chain --- ", stopwatch(i,chainsteps,clock))
+        if iszero(i % 500) # Update progress every 500 steps
+            println("Main Chain --- ", stopwatch(i,chainsteps,clock))
+            flush(stdout)
+        end
+
     end
     outnames = (fieldnames(Proposal)...,:ll, :accept)
     outvalues = ((chains[i,:] for i in axes(chains,1))..., lldist, acceptance)
