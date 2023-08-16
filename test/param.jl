@@ -1,6 +1,12 @@
 @test seawater(1,2).Cl == seawater(1.,2.).Cl
-@test AND1B().O == -0.33 && AND1B().Cl == 19.2657
-@test AND2A().O == -1.0 && AND2A().Cl == 19.81655
+@test mcmurdoshelf().O == -0.33 && mcmurdoshelf().Cl == 19.2657
+@test mcmurdosound().O == -1.0 && mcmurdosound().Cl == 19.81655
+
+@test isnan(coredata([1,2], [1,1], [1,1], [1., missing], [1,1]).O.mu[2])
+@test coredata([1,2], [1,1], [1,1], [1., missing], [1,1]).z == [1.0, 2.0]
+@test andrill2a().z[1] ≈ 9.67
+@test andrill2a().Cl.mu[1] ≈ 23.1843
+@test isnan( last( andrill2a().O.mu ) )
 
 @test length(PorewaterProperty(4).p) == 4
 @test PorewaterProperty(2,1).o == PorewaterProperty([1.,1.],[1.,1.]).o

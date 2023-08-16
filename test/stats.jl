@@ -4,7 +4,8 @@
 @test PorewaterDiffusion.linterp(1,1,2,8,4) == 4.
 
 
-@test PorewaterDiffusion.normll(0,1,1) ≈ -0.5
+@test PorewaterDiffusion.normll(0.,1.,1.) ≈ -0.5
+@test PorewaterDiffusion.normll(NaN,1.,1.) == 0.
 @test PorewaterDiffusion.normpdf(0,1,0.5) ≈ 0.3520653267642995
 
 lltest = (; zo=[0, 1.8, 2.2], muo=[.2, .42, .6], sigo = [.08, .12, .14] , zm=0:4, m= [.2,.4, .5, .4, .3] )

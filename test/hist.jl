@@ -1,6 +1,6 @@
 @test PorewaterDiffusion.dt_climatetimestep(100:-1:0,10) == 100
 
-ch, k, sw, p = LR04(), constants(), AND2A(), Proposal(5320., 4e-5,1e-2,3.5, 4.2)
+ch, k, sw, p = LR04(), constants(), mcmurdosound(), Proposal(5320., 4e-5,1e-2,3.5, 4.2)
 sc = SedimentColumn(k.nz,sw...)
 porewaterhistory!(sc,p, k, ch,sw, PorewaterDiffusion.dt_climatetimestep(ch.t,k.dt))
 

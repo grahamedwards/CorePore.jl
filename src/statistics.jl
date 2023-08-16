@@ -14,11 +14,11 @@ normpdf(μ::Number,σ::Number,x::Number) = exp(-(x-μ)*(x-μ) / (2*σ*σ)) / (σ
 ```julia 
 normll(x, μ, σ)
 ```
-Calculate the (relative) log-likelihood that an observation `x` was drawn from the normal distribution with mean `μ` and standard deviation `σ`. 
+Calculate the (relative) log-likelihood that an observation `x` was drawn from the normal distribution with mean `μ` and standard deviation `σ`. If `μ` is a NaN (instead of missing for type homogeneity), returns `0`.
 
 Note: This function excludes a constant that will not vary for different vlaues of `x` to speed up calculation in `metropolis`. To calculate the absolute log-likelihood, take the `log` of `normpdf`
 """
-normll(μ::Number,σ::Number,x::Number) = -(x-μ)*(x-μ) / (2*σ*σ)
+normll(μ::Float64,σ::Float64,x::Float64) = ifelse(isnan(μ),zero(x), -(x-μ)*(x-μ) / (2*σ*σ))
 
 
 
@@ -109,14 +109,15 @@ porewatermetropolis...
 ```
 Not tested, not exported... yet...
 """
-function porewatermetropolis(p::Proposal, jumpsize::Proposal, prior::NamedTuple; burnin::Int=0, chainsteps::Int=100, explore=fieldnames(Proposal), k::NamedTuple=constants(), seawater::NamedTuple=AND2A(), benthic::NamedTuple=LR04(), scalefactor=2.9, rng::AbstractRNG=Random.Xoshiro())
+function porewatermetropolis(p::Proposal, jumpsize::Proposal, prior::NamedTuple; burnin::Int=0, chainsteps::Int=100, explore=fieldnames(Proposal), k::NamedTuple=constants(), seawater::NamedTuple=mcmurdosound(), benthic::NamedTuple=LR04(), scalefactor=2.9, rng::AbstractRNG=Random.Xoshiro())
 
     record_max_age = first(benthic.t)
     benthic_limits = extrema(benthic.x)
 
     ϕ = p # make a new proposal from the original.
 
-    chains = Matrix{eltype(p)}(undef, chainsteps, length(fieldnames(Proposal)))
+    chains = Matrix{Float64}(undef, length(fieldnames(Proposal)), chainsteps)
+    lldist = Vector{Float64}(undef, chainsteps)
 
     sc = SedimentColumn(k.nz,seawater...)
     ka_dt = PorewaterDiffusion.dt_climatetimestep(ch.t,k.dt)
@@ -164,7 +165,10 @@ function porewatermetropolis(p::Proposal, jumpsize::Proposal, prior::NamedTuple;
             ll = llϕ # Record new log likelihood              
         end
 
-        chains[i,:] = p.onset, p.dfrz, p.dmlt, p.sez2frz, p.frz2mlt
+        chains[:,i] = p.onset, p.dfrz, p.dmlt, p.sez2frz, p.frz2mlt
+        lldist[i] = ll
     end
-    NamedTuple{fieldnames(Proposal)}(chains[:,i] for i in axes(chains,2))
+    outnames = (fieldnames(Proposal)...,:ll)
+    outvalues = ((chains[i,:] for i in axes(chains,2))..., lldist)
+    NamedTuple{outnames}(outvalues)
 end

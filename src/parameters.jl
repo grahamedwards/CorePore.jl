@@ -6,7 +6,7 @@
 
 Returns a NamedTuple with values of chlorinity `Cl` and δ¹⁸O `O`(necessarily `Float64`s). 
 
-see also: [`AND1B`](@ref), [`AND2A`](@ref)
+see also: [`mcmurdoshelf`](@ref), [`mcmurdosound`](@ref)
 
 """
 
@@ -14,24 +14,75 @@ seawater(Cl::Number,O::Number) = (; Cl=float(Cl), O=float(O))
 
 
 """
-    AND1B()
+    mcmurdoshelf()
 
-Generate a [`seawater`](@ref) NamedTuple with coretop values of ANDRILL-1B.
+Generate a [`seawater`](@ref) NamedTuple with coretop porewater compositions from the McMurdo ice shelf. Pairs with core ANDRILL-1B.
 
-see also: [`seawater`](@ref)
-
-"""
-AND1B() = seawater(19.2657,-0.33)
+see also: [`seawater`](@ref), [`andrill1b`](@ref)
 
 """
-    AND2A()
-
-    Generate a [`seawater`](@ref) NamedTuple with coretop values of ANDRILL-2A.
-
-see also: [`seawater`](@ref)
+mcmurdoshelf() = seawater(19.2657,-0.33)
 
 """
-AND2A() = seawater(19.81655,-1.0)
+    mcmurdosound()
+
+Generate a [`seawater`](@ref) NamedTuple with southern McMurdo Sound seawater compositions. Pair with core ANDRILL-2A.
+
+see also: [`seawater`](@ref), [`andrill2a`](@ref)
+
+"""
+mcmurdosound() = seawater(19.81655,-1.0)
+
+
+
+"""
+
+    coredata(z, mCl, σCl, mO, σO)
+
+Returns a NamedTuple with sediment core data formatted for [`porewatermetropolis`](@ref) — `(; z, Cl = (mu, sig), O = (mu, sig))`. Inputs are Vectors for values of sample depths `z` (meters below sea floor), measured (mean) chlorinity `mCl` and 1σ uncertainty `σCl`, and measured (mean) δ¹⁸O `mO` and 1σ uncertainties `σO`. 
+
+Vectors must all be of the same length. If Cl and δ¹⁸O sampling is not 1:1, use `NaN` or anything that is not a subtype of Number (e.g. `missing`, `nothing`). While `NaN` is used internally, `coredata` does this conversion for you.
+
+`PorewaterDiffusion.jl` comes loaded with convenient functions to generate data for [`andrill2a`](@ref) from Tracy+ 2010 ([doi:10.1130/G30849.1](https://doi.org/10.1130/G30849.1)) and [`andrill1b`](@ref) from Pompilio+ 2007 (https://digitalcommons.unl.edu/andrillrespub/37). 
+
+"""
+function coredata(z::Vector{<:Number}, mCl::AbstractVector, σCl::AbstractVector, μO::AbstractVector, σO::AbstractVector)
+    @assert length(z) == length(mCl) == length(σCl) == length(μO) == length(σO)
+
+    @inbounds for i= eachindex(z)
+        mCl[i] = ifelse(typeof(mCl[i])<:Number, mCl[i], NaN)
+        σCl[i] = ifelse(typeof(σCl[i])<:Number, σCl[i], NaN)
+        μO[i] = ifelse(typeof(μO[i])<:Number, μO[i], NaN)
+        σO[i] = ifelse(typeof(σO[i])<:Number, σO[i], NaN)
+    end
+
+    (; z=float.(z), Cl=(mu=float.(mCl), sig = float.(σCl)), O=(mu=float.(μO), sig=float.(σO)))
+end
+
+
+
+
+"""
+
+    andrill2a
+
+Generate a [`coredata`](@ref) NamedTuple with data from core ANDRILL-2A (from Tracy+ 2010, [doi:10.1130/G30849.1](https://doi.org/10.1130/G30849.1)). 
+
+see also: [`coredata`](@ref)
+
+"""
+function andrill2a()
+    z = [9.67, 30.09, 37.41, 43.72, 51.3, 57.21, 62.66, 73.15, 81.03, 92.97, 116.22, 155.76, 235.66, 293.3, 336.18, 353.53, 545.01, 619.35, 779.69, 809.84, 963.44]
+
+    Clm = (35.45/1000) .* [654, 576, 612, 659, 693, 692, 691, 821, 722, 740, 804, 1117, 1974, 2100, 2303, 2253, 2771, 2728, 2895, 2722, 3091]
+
+    Cls = .05Clm   
+
+    Om = [-1.3, -2.7, -5.6, -8.1, -9.8, -10.0, -10.6, -10.3, missing, -10.9, -5.2, -8.5, -9.7, -10.6, -10.2, missing, -9.3, missing, missing, missing, missing]
+    Os = fill(0.1, length(Om))
+
+    coredata(z, Clm,Cls, Om, Os)
+end
 
 
 

@@ -1,4 +1,4 @@
-sw = AND1B()
+sw = mcmurdoshelf()
 bctest = (dt=10.,dz=5.,m=2e-4, f=2e-5)
     
     
@@ -23,7 +23,7 @@ coldbased = PorewaterDiffusion.boundaryconditions(sw..., 2., 1., 3., bctest.m, b
 ## Test diffusion calculations
 
 k=constants(k=0.1, dz=5, dt=10, depth=2000)
-sw = AND2A()
+sw = mcmurdosound()
 sc = SedimentColumn(k.nz,sw...)
 
 sc.Cl.o[1]= sc.Cl.o[end] *= 1.2
