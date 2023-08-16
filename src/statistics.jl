@@ -126,6 +126,7 @@ function porewatermetropolis(p::Proposal, jumpsize::Proposal, prior::NamedTuple;
 
     ll= loglikelihood(prior.z,prior.Cl.mu,prior.Cl.sig,k.z,sc.Cl.p) + loglikelihood(prior.z,prior.O.mu,prior.O.sig,k.z,sc.O.p)
 
+    clock = time()
     @inbounds for i=Base.OneTo(burnin)
 
         ϕ, jumpname,jump = proposaljump(p, jumpsize)
@@ -144,6 +145,7 @@ function porewatermetropolis(p::Proposal, jumpsize::Proposal, prior::NamedTuple;
             p = ϕ  # update proposal
             ll = llϕ # Record new log likelihood              
         end
+        iszero(i % 500) && println("Burn-In --- ", stopwatch(i,burnin,clock))
     end
 
     @inbounds for i=Base.OneTo(chainsteps)
@@ -172,8 +174,25 @@ function porewatermetropolis(p::Proposal, jumpsize::Proposal, prior::NamedTuple;
 
         chains[:,i] .= p.onset, p.dfrz, p.dmlt, p.sea2frz, p.frz2mlt
         lldist[i] = ll
+
+        iszero(i % 500) && println("Main Chain --- ", stopwatch(i,chainsteps,clock))
     end
     outnames = (fieldnames(Proposal)...,:ll)
     outvalues = ((chains[i,:] for i in axes(chains,1))..., lldist)
     NamedTuple{outnames}(outvalues)
+end
+
+
+"""
+
+    stopwatch(i, n, clock)
+
+Convenience function for [`porewatermetropolis`] that returns a String reporting the progress at step `i` for total steps `n` with start time `t` (in s since the epoch).
+
+"""
+function stopwatch(i::Integer,n::Integer,clock::Number)
+    pd = 10 * i ÷ n
+    bar = "■"^pd * "□"^(10-pd)
+    t = round((time() - clock) / 60,digits=2)
+    "0% |", bar,"| 100%  ||  total: $t m  ||  step: $i / $n"
 end
