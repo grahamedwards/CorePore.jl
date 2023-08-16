@@ -109,7 +109,7 @@ porewatermetropolis...
 ```
 Not tested, not exported... yet...
 """
-function porewatermetropolis(p::Proposal, jumpsize::Proposal, prior::NamedTuple; burnin::Int=0, chainsteps::Int=100, explore=fieldnames(Proposal), k::NamedTuple=constants(), seawater::NamedTuple=mcmurdosound(), benthic::NamedTuple=LR04(), scalefactor=2.9, rng::AbstractRNG=Random.Xoshiro())
+function porewatermetropolis(p::Proposal, jumpsize::Proposal, prior::NamedTuple; burnin::Int=0, chainsteps::Int=100, explore=fieldnames(Proposal), k::NamedTuple=constants(), seawater::NamedTuple=mcmurdosound(), benthic::NamedTuple=LR04(), scalejump=2.9, rng::AbstractRNG=Random.Xoshiro())
 
     record_max_age = first(benthic.t)
     benthic_limits = extrema(benthic.x)
@@ -120,27 +120,27 @@ function porewatermetropolis(p::Proposal, jumpsize::Proposal, prior::NamedTuple;
     lldist = Vector{Float64}(undef, chainsteps)
 
     sc = SedimentColumn(k.nz,seawater...)
-    ka_dt = PorewaterDiffusion.dt_climatetimestep(ch.t,k.dt)
+    ka_dt = PorewaterDiffusion.dt_climatetimestep(benthic.t,k.dt)
     
-    porewaterhistory!(sc, ϕ, k, ch,sw, ka_dt)
+    porewaterhistory!(sc, ϕ, k, benthic, seawater, ka_dt)
 
-    ll= loglikelihood(prior.Cl.z,prior.Cl.mu,prior.Cl.sig,k.z,sc.Cl.p) + loglikelihood(prior.O.z,prior.O.mu,prior.O.sig,k.z,sc.O.p)
+    ll= loglikelihood(prior.z,prior.Cl.mu,prior.Cl.sig,k.z,sc.Cl.p) + loglikelihood(prior.z,prior.O.mu,prior.O.sig,k.z,sc.O.p)
 
     @inbounds for i=Base.OneTo(burnin)
 
         ϕ, jumpname,jump = proposaljump(p, jumpsize)
         if strictpriors(ϕ, record_max_age, benthic_limits)
 
-            porewaterhistory!(sc, ϕ, k, ch, sw, ka_dt)
+            porewaterhistory!(sc, ϕ, k, benthic, seawater, ka_dt)
 
-            llϕ = loglikelihood(prior.Cl.z,prior.Cl.mu,prior.Cl.sig,k.z,sc.Cl.p) + loglikelihood(prior.O.z,prior.O.mu,prior.O.sig,k.z,sc.O.p)
+            llϕ = loglikelihood(prior.z,prior.Cl.mu,prior.Cl.sig,k.z,sc.Cl.p) + loglikelihood(prior.z,prior.O.mu,prior.O.sig,k.z,sc.O.p)
         else
             llϕ=-Inf
         end
 
         # Decide to accept or reject the proposal
         if log(rand(rng)) < (llϕ-ll) 
-            jumpsize = update(jumpsize,jumpname,abs(jump)*stepfactor) # update jumpsize
+            jumpsize = update(jumpsize,jumpname,abs(jump)*scalejump) # update jumpsize
             p = ϕ  # update proposal
             ll = llϕ # Record new log likelihood              
         end
@@ -151,24 +151,29 @@ function porewatermetropolis(p::Proposal, jumpsize::Proposal, prior::NamedTuple;
         ϕ, jumpname,jump = proposaljump(p, jumpsize)
         if strictpriors(ϕ, record_max_age, benthic_limits)
 
-            porewaterhistory!(sc, ϕ, k, ch, sw, ka_dt)
+            porewaterhistory!(sc, ϕ, k, benthic, seawater, ka_dt)
 
-            llϕ = loglikelihood(prior.Cl.z,prior.Cl.mu,prior.Cl.sig,k.z,sc.Cl.p) + loglikelihood(prior.O.z,prior.O.mu,prior.O.sig,k.z,sc.O.p)
+            llCl = loglikelihood(prior.z,prior.Cl.mu,prior.Cl.sig,k.z,sc.Cl.p) 
+            llO = loglikelihood(prior.z,prior.O.mu,prior.O.sig,k.z,sc.O.p)
+
+            println("Cl: $llCl, O: $llO")
+
+            llϕ = llCl + llO
         else
             llϕ=-Inf
         end
 
         # Decide to accept or reject the proposal
         if log(rand(rng)) < (llϕ-ll) 
-            jumpsize = update(jumpsize,jumpname,abs(jump)*stepfactor) # update jumpsize
+            jumpsize = update(jumpsize,jumpname,abs(jump)*scalejump) # update jumpsize
             p = ϕ  # update proposal
             ll = llϕ # Record new log likelihood              
         end
 
-        chains[:,i] = p.onset, p.dfrz, p.dmlt, p.sez2frz, p.frz2mlt
+        chains[:,i] .= p.onset, p.dfrz, p.dmlt, p.sea2frz, p.frz2mlt
         lldist[i] = ll
     end
     outnames = (fieldnames(Proposal)...,:ll)
-    outvalues = ((chains[i,:] for i in axes(chains,2))..., lldist)
+    outvalues = ((chains[i,:] for i in axes(chains,1))..., lldist)
     NamedTuple{outnames}(outvalues)
 end

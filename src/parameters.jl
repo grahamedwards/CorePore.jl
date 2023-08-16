@@ -76,9 +76,10 @@ function andrill2a()
 
     Clm = (35.45/1000) .* [654, 576, 612, 659, 693, 692, 691, 821, 722, 740, 804, 1117, 1974, 2100, 2303, 2253, 2771, 2728, 2895, 2722, 3091]
 
-    Cls = .05Clm   
+    Cls = .03Clm # 3-5 % reported reproducibility. We choose the lower bound given the ±2% precision reported in Pompilio+ 2007.
 
     Om = [-1.3, -2.7, -5.6, -8.1, -9.8, -10.0, -10.6, -10.3, missing, -10.9, -5.2, -8.5, -9.7, -10.6, -10.2, missing, -9.3, missing, missing, missing, missing]
+
     Os = fill(0.1, length(Om))
 
     coredata(z, Clm,Cls, Om, Os)

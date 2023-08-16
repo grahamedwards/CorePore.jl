@@ -11,7 +11,7 @@ include("diffuse.jl")
 export porewaterhistory, porewaterhistory!
 include("history.jl")
 
-#export 
+export porewatermetropolis
 include("statistics.jl")
 
 end
