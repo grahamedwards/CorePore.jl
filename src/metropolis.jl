@@ -51,7 +51,7 @@ function stopwatch(i::Integer,n::Integer,clock::Number)
     pd = 10 * i ÷ n
     bar = "■"^pd * "□"^(10-pd)
     t = round((time() - clock) / 60,digits=2)
-    "0% |", bar,"| 100%  ||  total: $t m  ||  step: $i / $n"
+    string("0% |", bar,"| 100%  ||  step: $i / $n  ||  time: $t m")
 end
 
 
