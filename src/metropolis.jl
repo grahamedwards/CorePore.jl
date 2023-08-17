@@ -65,7 +65,7 @@ porewatermetropolis...
 ```
 Not tested, not exported... yet...
 """
-function porewatermetropolis(p::Proposal, jumpsize::Proposal, prior::NamedTuple; burnin::Int=0, chainsteps::Int=100, k::Constants=Constants(), seawater::Seawater=mcmurdosound(), benthic::CoreData=LR04(), scalejump=2.9, rng::AbstractRNG=Random.Xoshiro())
+function porewatermetropolis(p::Proposal, jumpsize::Proposal, prior::CoreData; burnin::Int=0, chainsteps::Int=100, k::Constants=Constants(), seawater::Seawater=mcmurdosound(), benthic::ClimateHistory=LR04(), scalejump=2.9, rng::AbstractRNG=Random.Xoshiro())
 
     record_max_age = first(benthic.t)
     benthic_limits = extrema(benthic.x)
@@ -88,7 +88,7 @@ function porewatermetropolis(p::Proposal, jumpsize::Proposal, prior::NamedTuple;
     flush(stdout)
     @inbounds for i=Base.OneTo(burnin)
 
-        ϕ, jumpname,jump = proposaljump(p, jumpsize,rng=rng)
+        ϕ, jumpname,jump = proposaljump(p, jumpsize, rng=rng)
         if strictpriors(ϕ, record_max_age, benthic_limits)
 
             porewaterhistory!(sc, ϕ, k, benthic, seawater, ka_dt)
@@ -116,7 +116,7 @@ function porewatermetropolis(p::Proposal, jumpsize::Proposal, prior::NamedTuple;
 
     @inbounds for i=Base.OneTo(chainsteps)
 
-        ϕ, jumpname,jump = proposaljump(p, jumpsize)
+        ϕ, jumpname,jump = proposaljump(p, jumpsize, rng=rng)
         if strictpriors(ϕ, record_max_age, benthic_limits)
 
             porewaterhistory!(sc, ϕ, k, benthic, seawater, ka_dt)

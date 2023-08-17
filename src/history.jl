@@ -1,7 +1,7 @@
 """
 
 ```julia
-porewaterhistory!(sc::SedimentColumn, p::Proposal, k::NamedTuple, climhist::NamedTuple, sw::NamedTuple, ka_dt::Int)
+porewaterhistory!(sc::SedimentColumn, p::Proposal, k::Constants, climhist::NamedTuple, sw::NamedTuple, ka_dt::Int)
 ```
 
 In-place version of [`porewaterhistory`](@ref), which takes every input as an arg (rather than some defaults as kwargs). It also requires you to provide `ka_dt` -- the number of diffusion timesteps in each thousand-year climate timestep.
@@ -9,7 +9,7 @@ In-place version of [`porewaterhistory`](@ref), which takes every input as an ar
 see also: [`porewaterhistory`](@ref)
 
 """
-function porewaterhistory!(sc::SedimentColumn, p::Proposal, k::Constants, climhist::NamedTuple, sw::Seawater, ka_dt::Int)
+function porewaterhistory!(sc::SedimentColumn, p::Proposal, k::Constants, climhist::ClimateHistory, sw::Seawater, ka_dt::Int)
     
     isd = searchsortedfirst(climhist.t, p.onset, rev=true)
     #isd = ifelse(isd<climhist.n, isd, climhist.n)
@@ -47,7 +47,7 @@ See [`diffuseadvectcolumn!`](@ref) for the underlying diffusion-advection transp
 see also: [`porewaterhistory!`](@ref), [`Proposal`](@ref), [`Constants`](@ref), [`LR04`](@ref), [`seawater`](@ref)
 
 """
-function porewaterhistory(p::Proposal; k::Constants=Constants(), climatehistory::NamedTuple=LR04(), seawater::Seawater=mcmurdosound())
+function porewaterhistory(p::Proposal; k::Constants=Constants(), climatehistory::ClimateHistory=LR04(), seawater::Seawater=mcmurdosound())
 
     sc = SedimentColumn(k.nz,seawater...)
     porewaterhistory!(sc, p, k, climatehistory, seawater, dt_climatetimestep(climatehistory.t,k.dt))
