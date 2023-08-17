@@ -22,7 +22,7 @@ coldbased = PorewaterDiffusion.boundaryconditions(sw..., 2., 1., 3., bctest.m, b
 
 ## Test diffusion calculations
 
-k=constants(k=0.1, dz=5, dt=10, depth=2000)
+k=Constants(k=0.1, dz=5, dt=10, depth=2000)
 sw = mcmurdosound()
 sc = SedimentColumn(k.nz,sw...)
 

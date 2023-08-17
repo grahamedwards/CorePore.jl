@@ -9,7 +9,7 @@ In-place version of [`porewaterhistory`](@ref), which takes every input as an ar
 see also: [`porewaterhistory`](@ref)
 
 """
-function porewaterhistory!(sc::SedimentColumn, p::Proposal, k::NamedTuple, climhist::NamedTuple, sw::NamedTuple, ka_dt::Int)
+function porewaterhistory!(sc::SedimentColumn, p::Proposal, k::Constants, climhist::NamedTuple, sw::Seawater, ka_dt::Int)
     
     isd = searchsortedfirst(climhist.t, p.onset, rev=true)
     #isd = ifelse(isd<climhist.n, isd, climhist.n)
@@ -35,19 +35,19 @@ end
 """
 
 ```julia
-porewaterhistory(proposals [; k=constants(), climatehistory=LR04(), seawater=mcmurdosound()])
+porewaterhistory(proposals [; k=Constants(), climatehistory=LR04(), seawater=mcmurdosound()])
 ```
 
-Calculate the porewater advection-diffusion history of chlorinity and O-isotope-traced water in a sediment column described by properties in `k` (generated with [`constants`](@ref)) over a given [`climatehistory`](@ref) ([`LR04`](@ref) by default) and coretop `seawater` compositions.
+Calculate the porewater advection-diffusion history of chlorinity and O-isotope-traced water in a sediment column described by properties in `k` (::[`Constants`](@ref)) over a given [`climatehistory`](@ref) ([`LR04`](@ref) by default) and coretop `seawater` compositions.
 
 The provided `proposals` (as custom type [`Proposal`](@ref)) describe the sensitivity and response of the system to climate fluctuations as recorded in `climatehistory`.
 
 See [`diffuseadvectcolumn!`](@ref) for the underlying diffusion-advection transport calculations.
 
-see also: [`porewaterhistory!`](@ref), [`Proposal`](@ref), [`constants`](@ref), [`LR04`](@ref), [`seawater`](@ref)
+see also: [`porewaterhistory!`](@ref), [`Proposal`](@ref), [`Constants`](@ref), [`LR04`](@ref), [`seawater`](@ref)
 
 """
-function porewaterhistory(p::Proposal; k::NamedTuple=constants(), climatehistory::NamedTuple=LR04(), seawater::NamedTuple=mcmurdosound())
+function porewaterhistory(p::Proposal; k::Constants=Constants(), climatehistory::NamedTuple=LR04(), seawater::Seawater=mcmurdosound())
 
     sc = SedimentColumn(k.nz,seawater...)
     porewaterhistory!(sc, p, k, climatehistory, seawater, dt_climatetimestep(climatehistory.t,k.dt))

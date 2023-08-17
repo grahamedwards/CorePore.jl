@@ -2,11 +2,11 @@
 @test mcmurdoshelf().O == -0.33 && mcmurdoshelf().Cl == 19.2657
 @test mcmurdosound().O == -1.0 && mcmurdosound().Cl == 19.81655
 
-@test isnan(coredata([1,2], [1,1], [1,1], [1., missing], [1,1]).O.mu[2])
-@test coredata([1,2], [1,1], [1,1], [1., missing], [1,1]).z == [1.0, 2.0]
-@test coredata([1,2], [1,1], [1,1], :Cl).z == [1., 2.]
-@test isempty(coredata([1,2], [1,1], [1,1], :Cl).O.mu)
-@test isempty(coredata([1,2], [1,1], [1,1], :O).Cl.mu)
+@test isnan(CoreData([1,2], [1,1], [1,1], [1., missing], [1,1]).O.mu[2])
+@test CoreData([1,2], [1,1], [1,1], [1., missing], [1,1]).z == [1.0, 2.0]
+@test CoreData([1,2], [1,1], [1,1], :Cl).z == [1., 2.]
+@test isempty(CoreData([1,2], [1,1], [1,1], :Cl).O.mu)
+@test isempty(CoreData([1,2], [1,1], [1,1], :O).Cl.mu)
 
 @test andrill2a().z[1] ≈ 9.67
 @test andrill2a().Cl.mu[1] ≈ 23.1843
@@ -22,7 +22,7 @@ lr04test = LR04()
 @test first(lr04test.t) == 5320.
 @test last(lr04test.x) == 3.23
 
-ktest = constants(k=0.1, dz=5, dt=10, depth=2000)
+ktest = Constants(k=0.1, dz=5, dt=10, depth=2000)
 
 @test ktest.depth == 2000.
 @test ktest.dtdz == 5. * 10.

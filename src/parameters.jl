@@ -6,12 +6,21 @@
 
 Returns a NamedTuple with values of chlorinity `Cl` and δ¹⁸O `O`(necessarily `Float64`s). 
 
-see also: [`mcmurdoshelf`](@ref), [`mcmurdosound`](@ref)
+see also: [`mcmurdoshelf`](@ref), [`mcmurdosound`](@ref), [`PorewaterDiffusion.Seawater`](@ref)
 
 """
 
 seawater(Cl::Number,O::Number) = (; Cl=float(Cl), O=float(O))
 
+"""
+    Seawater
+
+`DataType` declared as a shorthand for `NamedTuple{(:Cl, :O), Tuple{Float64,Float64}}` because Graham likes the splatting functionality of NamedTuples and structs don't have it!
+
+see also: [`seawater`](@ref)
+    
+"""
+const Seawater = NamedTuple{(:Cl, :O), Tuple{Float64,Float64}}
 
 """
     mcmurdoshelf()
@@ -37,15 +46,15 @@ mcmurdosound() = seawater(19.81655,-1.0)
 
 """
 
-    coredata(z, mCl, σCl, mO, σO)
+    CoreData(z, mCl, σCl, mO, σO)
 
-Returns a NamedTuple with sediment core data formatted for [`porewatermetropolis`](@ref) — `(; z, Cl = (mu, sig), O = (mu, sig))`. Inputs are Vectors for values of sample depths `z` (meters below sea floor), measured (mean) chlorinity `mCl` and 1σ uncertainty `σCl`, and measured (mean) δ¹⁸O `mO` and 1σ uncertainties `σO`. 
+Returns an  `CoreData` struct with sediment core data formatted for [`porewatermetropolis`](@ref) — `(; z, Cl = (mu, sig), O = (mu, sig))`. Inputs are Vectors for values of sample depths `z` (meters below sea floor), measured (mean) chlorinity `mCl` and 1σ uncertainty `σCl`, and measured (mean) δ¹⁸O `mO` and 1σ uncertainties `σO`. 
 
-Vectors must all be of the same length. If Cl and δ¹⁸O sampling is not 1:1, use `NaN` or anything that is not a subtype of Number (e.g. `missing`, `nothing`). While `NaN` is used internally, `coredata` does this conversion for you.
+Vectors must all be of the same length. If Cl and δ¹⁸O sampling is not 1:1, use `NaN` or anything that is not a subtype of Number (e.g. `missing`, `nothing`). While `NaN` is used internally, `CoreData` does this conversion for you.
 
 ---
 
-    coredata(z, m, σ, measurement)
+    CoreData(z, m, σ, measurement)
 
 Same as above, but for a core with only chlorinity or δ¹⁸O data (the other Vectors are empty to return null values in [`log-likelihood`](@ref) calculations). Provide sample depths `z`, measured means `m`, 1σ uncertainties `σ`, and the `measurement` as a symbol, e.g. `:Cl` or `:O`. 
 
@@ -54,7 +63,14 @@ Same as above, but for a core with only chlorinity or δ¹⁸O data (the other V
 `PorewaterDiffusion.jl` comes loaded with convenient functions to generate data for [`andrill2a`](@ref) from Tracy+ 2010 ([doi:10.1130/G30849.1](https://doi.org/10.1130/G30849.1)) and [`andrill1b`](@ref) from Pompilio+ 2007 (https://digitalcommons.unl.edu/andrillrespub/37). 
 
 """
-function coredata(z::Vector{<:Number}, mCl::AbstractVector, σCl::AbstractVector, μO::AbstractVector, σO::AbstractVector)
+struct CoreData
+    z::Vector{Float64}
+    Cl::NamedTuple{(:mu, :sig), Tuple{Vector{Float64}, Vector{Float64}}}
+    O::NamedTuple{(:mu, :sig), Tuple{Vector{Float64}, Vector{Float64}}}
+end
+
+
+function CoreData(z::Vector{<:Number}, mCl::AbstractVector, σCl::AbstractVector, μO::AbstractVector, σO::AbstractVector)
     @assert length(z) == length(mCl) == length(σCl) == length(μO) == length(σO)
 
     @inbounds for i= eachindex(z)
@@ -64,9 +80,9 @@ function coredata(z::Vector{<:Number}, mCl::AbstractVector, σCl::AbstractVector
         σO[i] = ifelse(typeof(σO[i])<:Number, σO[i], NaN)
     end
 
-    (; z=float.(z), Cl=(mu=float.(mCl), sig = float.(σCl)), O=(mu=float.(μO), sig=float.(σO)))
+    CoreData(float.(z), (mu=float.(mCl), sig = float.(σCl)), (mu=float.(μO), sig=float.(σO)))
 end
-function coredata(z::Vector{<:Number}, m::AbstractVector, σ::AbstractVector, s::Symbol)
+function CoreData(z::Vector{<:Number}, m::AbstractVector, σ::AbstractVector, s::Symbol)
     
     @assert length(z) == length(m) == length(σ)
     
@@ -82,7 +98,7 @@ function coredata(z::Vector{<:Number}, m::AbstractVector, σ::AbstractVector, s:
     xx = Vector{eltype(x.mu)}(undef,0)
     xx = (mu = xx, sig = xx)
 
-    s ∈ chlorine ? (; z=float.(z), Cl=x, O=xx) : (; z=float.(z), Cl=xx, O=x)
+    s ∈ chlorine ? CoreData(float.(z), x, xx) : CoreData(float.(z), xx, x)
 end
 
 
@@ -90,9 +106,9 @@ end
 
     andrill2a
 
-Generate a [`coredata`](@ref) NamedTuple with data from core ANDRILL-2A (from Tracy+ 2010, [doi:10.1130/G30849.1](https://doi.org/10.1130/G30849.1)). 
+Generate a [`CoreData`](@ref) NamedTuple with data from core ANDRILL-2A (from Tracy+ 2010, [doi:10.1130/G30849.1](https://doi.org/10.1130/G30849.1)). 
 
-see also: [`coredata`](@ref)
+see also: [`CoreData`](@ref), [`CoreData`](@ref)
 
 """
 function andrill2a()
@@ -106,7 +122,7 @@ function andrill2a()
 
     Os = fill(0.1, length(Om))
 
-    coredata(z, Clm,Cls, Om, Os)
+    CoreData(z, Clm,Cls, Om, Os)
 end
 
 
@@ -172,7 +188,8 @@ Load a NamedTuple containing the Liesiecki & Raymo 2004 benthic stack ([data](ht
 | field | description |
 | :---- | :---------- | 
 | `t`   | time (ka)  |
-| `x`   | benthic δ¹⁸O (‰)|
+| `x`   | benthic δ¹⁸O (‰) |
+| `n`   | timesteps in `t` |
 
 """
 function LR04()
@@ -190,12 +207,10 @@ end
 """
 
 ```julia
-    constants( ; k, dt, dz, depth )
+    Constants( ; k, dt, dz, depth )
 ````
 
-Returns a NamedTuple of constants and coefficients used in diffusion history calculations. The input constants and their default values are listed in the table below. From these it calculates a few convenient variables: the product `dt * dz` (`dtdz`), a Range of node depths `z` (in m), the number of nodes `nz`, and the `penultimate_node`. 
-
-Using the constants, it calculates the temperature-dependent diffusion coefficients used in `diffusionadvection`, using the temperature-depth paramterization of [Morin+ 2010](https://doi.org/10.1130/GES00512.1). These are returned as Vectors of length `nz`, where each cell corresponds to a depth node in `z`. The two coefficients are `k1` and `k2`, both of which are follwed with `cl` or `w` to denote Cl⁻ or water, respectively: `k1cl`, `k2cl`, `k1w`, and `k2w`.
+Returns a `Constants` struct containing constants and coefficients used in diffusion history calculations. The inputs and their default values are listed in the table below. From these it calculates a few convenient variables---the product `dt * dz` (`dtdz`), a Range of node depths `z` (in m), the number of nodes `nz`, and the `penultimate_node`---as well as temperature-dependent diffusion coefficients used in `diffusionadvection`, using the temperature-depth paramterization of [Morin+ 2010](https://doi.org/10.1130/GES00512.1). These are returned as Vectors of length `nz`, where each cell corresponds to a depth node in `z`. The two coefficients are `k1` and `k2`, both of which are follwed with `cl` or `w` to denote Cl⁻ or water, respectively: `k1cl`, `k2cl`, `k1w`, and `k2w`.
 
 | field | description | default |
 | :---- | :---------- | ----: |
@@ -205,7 +220,23 @@ Using the constants, it calculates the temperature-dependent diffusion coefficie
 | `depth` | sediment column depth | 2000 m |
 
 """
-function constants(; k::Number=0.1, dt::Number=10., dz::Number=5.,  depth::Number=2000.)
+struct Constants
+
+    k::Float64
+    dz::Float64
+    dt::Float64
+    depth::Float64
+    dtdz::Float64
+    z::AbstractRange{Float64}
+    nz::Int
+    penultimate_node::Int
+    k1cl::Vector{Float64}
+    k2cl::Vector{Float64}
+    k1w::Vector{Float64}
+    k2w::Vector{Float64}
+end
+
+function Constants(; k::Number=0.1, dt::Number=10., dz::Number=5.,  depth::Number=2000.)
 
     depth = ifelse( iszero(depth % dz), depth, depth - depth % dz)
 
@@ -232,7 +263,7 @@ function constants(; k::Number=0.1, dt::Number=10., dz::Number=5.,  depth::Numbe
         k2w[i] = (κwater[i] - κwater[i-1]) * x 
     end
 
-    (; k, dz, dt, depth, dtdz = dt*dz, z, nz, penultimate_node=nz-1, k1cl, k2cl, k1w, k2w)
+    Constants(k, dz, dt, depth, dt*dz, z, nz, nz-1, k1cl, k2cl, k1w, k2w)
 end 
 
 
