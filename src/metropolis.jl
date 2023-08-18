@@ -86,6 +86,8 @@ function porewatermetropolis(p::Proposal, jumpsize::Proposal, prior::CoreData; b
     clock, burnupdate, chainupdate = time(), div(burnin,20), div(chainsteps,20)
     println("Beginning sequence...\n  $burnin burn-in iterations \n  $chainsteps recorded iterations\n ------------ \n\n " )
     flush(stdout)
+
+    burninacceptance=0
     
     @inbounds for i=Base.OneTo(burnin)
 
@@ -105,7 +107,8 @@ function porewatermetropolis(p::Proposal, jumpsize::Proposal, prior::CoreData; b
         if log(rand(rng)) < (llϕ-ll) 
             jumpsize = update(jumpsize,jumpname,abs(jump)*scalejump) # update jumpsize
             p = ϕ  # update proposal
-            ll = llϕ # Record new log likelihood              
+            ll = llϕ # Record new log likelihood
+            burninacceptance=+1              
         end
 
         if iszero(i % burnupdate) # Update progress
@@ -114,7 +117,7 @@ function porewatermetropolis(p::Proposal, jumpsize::Proposal, prior::CoreData; b
         end
     end
 
-    println(burnin," burn-in steps complete. Current guess: ",p,", ℓ = $ll, jumps = $jumpsize")
+    println("\n\n$burnin burn-in steps complete. ℓ = $ll, acceptance rate= $(100burninacceptance÷burnin) %.\n\nCurrent guess: $p\nJumps = $jumpsize\n")
     flush(stdout)
 
     @inbounds for i=Base.OneTo(chainsteps)
