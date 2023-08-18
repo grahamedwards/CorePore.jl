@@ -12,7 +12,7 @@ Evalute strict constraints on priors that will automatically reject a proposal:
 """
 function strictpriors(p::Proposal, record_max_age::Number, benthiclimits::Tuple)
     x=true
-    x *= p.onset < record_max_age
+    x *= p.onset <= record_max_age
     x *= 0 < p.onset
 
     x *= p.dfrz > 0 
@@ -27,7 +27,7 @@ end
 
 
 
-function proposaljump(p::Proposal, j::Proposal; f::NTuple=fieldnames(Proposal), rng::AbstractRNG=Random.Xoshiro())
+function proposaljump(p::Proposal, j::Proposal; rng::AbstractRNG, f::NTuple=fieldnames(Proposal))
 
     jumpname = rand(rng,f)
     jump = getproperty(j,jumpname) * randn(rng)
@@ -63,9 +63,9 @@ end
 ```julia
 porewatermetropolis...
 ```
-Not tested, not exported... yet...
+Not tested, yet...
 """
-function porewatermetropolis(p::Proposal, jumpsize::Proposal, prior::CoreData; burnin::Int=0, chainsteps::Int=100, k::Constants=Constants(), seawater::Seawater=mcmurdosound(), benthic::ClimateHistory=LR04(), scalejump=2.9, rng::AbstractRNG=Random.Xoshiro())
+function porewatermetropolis(p::Proposal, jumpsize::Proposal, prior::CoreData; burnin::Int=0, chainsteps::Int=100, k::Constants=Constants(), seawater::Seawater=mcmurdosound(), benthic::ClimateHistory=LR04(), scalejump=1.8, rng::AbstractRNG=Random.Xoshiro())
 
     record_max_age = first(benthic.t)
     benthic_limits = extrema(benthic.x)
@@ -83,9 +83,10 @@ function porewatermetropolis(p::Proposal, jumpsize::Proposal, prior::CoreData; b
 
     ll= loglikelihood(prior.z,prior.Cl.mu,prior.Cl.sig,k.z,sc.Cl.p) + loglikelihood(prior.z,prior.O.mu,prior.O.sig,k.z,sc.O.p)
 
-    clock = time()
+    clock, burnupdate, chainupdate = time(), div(burnin,20), div(chainsteps,20)
     println("Beginning sequence...\n  $burnin burn-in iterations \n  $chainsteps recorded iterations\n ------------ \n\n " )
     flush(stdout)
+    
     @inbounds for i=Base.OneTo(burnin)
 
         ϕ, jumpname,jump = proposaljump(p, jumpsize, rng=rng)
@@ -93,7 +94,9 @@ function porewatermetropolis(p::Proposal, jumpsize::Proposal, prior::CoreData; b
 
             porewaterhistory!(sc, ϕ, k, benthic, seawater, ka_dt)
 
-            llϕ = loglikelihood(prior.z,prior.Cl.mu,prior.Cl.sig,k.z,sc.Cl.p) + loglikelihood(prior.z,prior.O.mu,prior.O.sig,k.z,sc.O.p)
+            llCl = loglikelihood(prior.z,prior.Cl.mu,prior.Cl.sig,k.z,sc.Cl.p) 
+            llO = loglikelihood(prior.z,prior.O.mu,prior.O.sig,k.z,sc.O.p)
+            llϕ = llCl + llO
         else
             llϕ=-Inf
         end
@@ -105,13 +108,13 @@ function porewatermetropolis(p::Proposal, jumpsize::Proposal, prior::CoreData; b
             ll = llϕ # Record new log likelihood              
         end
 
-        if iszero(i % 500) # Update progress every 500 steps
+        if iszero(i % burnupdate) # Update progress
             println("Burn-In --- ", stopwatch(i,burnin,clock))
             flush(stdout)
         end
     end
 
-    println(burnin," burn-in steps complete. Current guess: ",p,", ℓ = $ll" )
+    println(burnin," burn-in steps complete. Current guess: ",p,", ℓ = $ll, jumps = $jumpsize")
     flush(stdout)
 
     @inbounds for i=Base.OneTo(chainsteps)
@@ -140,7 +143,7 @@ function porewatermetropolis(p::Proposal, jumpsize::Proposal, prior::CoreData; b
         chains[:,i] .= p.onset, p.dfrz, p.dmlt, p.sea2frz, p.frz2mlt
         lldist[i] = ll
 
-        if iszero(i % 500) # Update progress every 500 steps
+        if iszero(i % chainupdate) # Update progress 
             println("Main Chain --- ", stopwatch(i,chainsteps,clock))
             flush(stdout)
         end
@@ -148,7 +151,7 @@ function porewatermetropolis(p::Proposal, jumpsize::Proposal, prior::CoreData; b
     end
     outnames = (fieldnames(Proposal)...,:ll, :accept)
     outvalues = ((chains[i,:] for i in axes(chains,1))..., lldist, acceptance)
-    NamedTuple{outnames}(outvalues)
+    NamedTuple{outnames}(outvalues), jumpsize
 end
 
 
