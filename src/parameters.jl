@@ -127,6 +127,30 @@ end
 
 
 
+"""
+
+    andrill1b
+
+Generate a [`CoreData`](@ref) instance with data from core ANDRILL-1B (from Pompilio+ 2007 (https://digitalcommons.unl.edu/andrillrespub/37)). 
+
+see also: [`CoreData`](@ref)
+
+"""
+function andrill1b()
+    z = [0.,]
+
+    Clm = (35.45/1000) .* [0.,]
+
+    Cls = .02Clm # ±2% precision reported
+
+    Om = @. 30.92 + 1.03092 * [0.] # will need to be converted from carbonate values in vpdb to water values in vsmow. Not too hard, just need to know temperature. 
+
+    # δ18O(VSMOW) = 1.03092 × δ18O(VPDB) + 30.92 # [Kim+ 2015](https://doi.org/10.1016/j.gca.2015.02.011)
+
+    Os = fill(0.1, length(Om)) # based on UCSC isotope lab.
+
+    CoreData(z, Clm,Cls, Om, Os)
+end
 
 
 """
