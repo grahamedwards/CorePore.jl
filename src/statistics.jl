@@ -26,7 +26,7 @@ normll(μ::Float64,σ::Float64,x::Float64) = ifelse(isnan(μ),zero(x), -(x-μ)*(
 
 """
 
-    linterp(x, y₂, y₁, x₁, Δx)
+    linterp(x, x₁, Δx, y₂, y₁ )
 
 Estimate the value of y corresponding to `x` given known coordinate (`x₁`, `y₁`), value `y₂`, and `Δx`= x₂ - x₁. Note that if `x`==`x₁`, y= `y₁`. 
 
@@ -41,7 +41,7 @@ linterp(x,x1,dx,y2,y1) = y1 + (x-x1) * (y2-y1)/dx
 """
     loglikelihood( zₒ, μ, σ, zₘ, m ) 
 
-Calculate the (relative) log-likelihood that model values in `m` simulated at depth nodes in `zₘ` were drawn from normally distributed observations with sample depths, mean values, and 1σ uncertainties in corresponding indices of the Vectors `z`, `μₒ`, and `σ`. In instances where sample depths do not correspond to depth nodes, the simulated value is linearly interpolated between bounding depth nodes in `zₘ`.
+Calculate the (relative) log-likelihood that model values in `m` simulated at depth nodes in `zₘ` were drawn from normally distributed observations with sample depths, mean values, and 1σ uncertainties in corresponding indices of the Vectors `zₒ`, `μₒ`, and `σ`. The simulated value is linearly interpolated between bounding depth nodes in `zₘ`.
 
 see also: [`normll`](@ref), [`linterp`](@ref)
 
@@ -52,8 +52,9 @@ function loglikelihood(zo::T, muo::T, sigo::T, zm::AbstractRange{Float64}, m::T)
 
     @inbounds @simd for i = eachindex(zo)
         zoi = zo[i]
-        mi = searchsortedfirst(zm, zoi)
-        xmi = linterp(zoi, zm[mi], dzm, m[mi+1], m[mi])
+        mi = searchsortedfirst(zm, zoi) # find first index ≥ zoi
+        mi_ = ifelse(zoi == zm[mi], mi, mi-1) # if zm[mi] ≠ zoi, mi_ is the preceding index, otherwise mi = mi_ and xmi = m[mi]
+        xmi = linterp(zoi, zm[mi_], dzm, m[mi], m[mi_])
         ll += normll(muo[i], sigo[i], xmi)
     end
     ll
