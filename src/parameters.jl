@@ -282,7 +282,7 @@ function Constants(; k::Number=0.1, dt::Number=10., dz::Number=5.,  depth::Numbe
 
     k, dz, dt = float.((k, dz, dt))
 
-    z = 0:dz:depth
+    z = 0.0 : dz : depth
     depth=last(z)
     nz = length(z)
 

@@ -46,13 +46,14 @@ Calculate the (relative) log-likelihood that model values in `m` simulated at de
 see also: [`normll`](@ref), [`linterp`](@ref)
 
 """
-function loglikelihood(zo::T, muo::T, sigo::T, zm::AbstractRange, m::T) where T<:Vector{Float64}
+function loglikelihood(zo::T, muo::T, sigo::T, zm::AbstractRange{Float64}, m::T) where T<:Vector{Float64}
     ll=zero(eltype(m))
     dzm = step(zm)
 
     @inbounds @simd for i = eachindex(zo)
-        mi = searchsortedfirst(zm, zo[i])
-        xmi = linterp(zo[i], zm[mi], dzm, m[mi+1], m[mi])
+        zoi = zo[i]
+        mi = searchsortedfirst(zm, zoi)
+        xmi = linterp(zoi, zm[mi], dzm, m[mi+1], m[mi])
         ll += normll(muo[i], sigo[i], xmi)
     end
     ll

@@ -8,7 +8,7 @@
 @test PorewaterDiffusion.normll(NaN,1.,1.) == 0.
 @test PorewaterDiffusion.normpdf(0,1,0.5) ≈ 0.3520653267642995
 
-lltest = (; zo=[0, 1.8, 2.2], muo=[.2, .42, .6], sigo = [.08, .12, .14] , zm=0:4, m= [.2,.4, .5, .4, .3] )
+lltest = (; zo=[0, 1.8, 2.2], muo=[.2, .42, .6], sigo = [.08, .12, .14] , zm=0:4., m= [.2,.4, .5, .4, .3] )
 
 @test -0.72 <PorewaterDiffusion.loglikelihood(lltest...) < -0.71 
 @test iszero(PorewaterDiffusion.loglikelihood(zeros(0), lltest.muo, lltest.sigo, lltest.zm, lltest.m))
