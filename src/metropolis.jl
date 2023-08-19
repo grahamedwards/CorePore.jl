@@ -27,11 +27,11 @@ end
 
 
 
-function proposaljump(p::Proposal, j::Proposal; rng::AbstractRNG, f::NTuple=fieldnames(Proposal))
+function proposaljump(p::Proposal, j::Proposal; rng::AbstractRNG, f::Tuple=fieldnames(Proposal))
 
-    jumpname = rand(rng,f)
-    jump = getproperty(j,jumpname) * randn(rng)
-    jumped = getproperty(p,jumpname) + jump
+    jumpname::Symbol = rand(rng,f)
+    jump = getproposal(j,jumpname) * randn(rng)
+    jumped = getproposal(p,jumpname) + jump
 
     (update(p,jumpname,jumped) , jumpname , jump )
 end
@@ -65,7 +65,7 @@ porewatermetropolis...
 ```
 Not tested, yet...
 """
-function porewatermetropolis(p::Proposal, jumpsize::Proposal, prior::CoreData; burnin::Int=0, chainsteps::Int=100, k::Constants=Constants(), seawater::Seawater=mcmurdosound(), benthic::ClimateHistory=LR04(), scalejump=1.8, rng::AbstractRNG=Random.Xoshiro())
+function porewatermetropolis(p::Proposal, jumpsize::Proposal, prior::CoreData; burnin::Int=0, chainsteps::Int=100, k::Constants=Constants(), seawater::Seawater=mcmurdosound(), explore::Tuple=fieldnames(Proposal),benthic::ClimateHistory=LR04(), scalejump=1.8, rng::AbstractRNG=Random.Xoshiro())
 
     record_max_age = first(benthic.t)
     benthic_limits = extrema(benthic.x)

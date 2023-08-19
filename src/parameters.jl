@@ -343,3 +343,21 @@ function update(x::Proposal, f::Symbol,v::Number)
 end
 
 
+
+
+
+"""
+    getproposal(p, s)
+
+Returns the value corresponding to field the field of Symbol `s` in [`Proposal`](@ref) instance `p`. Use in lieu of `getproperty` to avoid allocations. 
+
+"""
+function getproposal(x::Proposal,f::Symbol)
+    y=0.
+    y = ifelse(f==:onset, x.onset,y)
+    y = ifelse(f==:dfrz, x.dfrz, y)
+    y = ifelse(f==:dmlt, x.dmlt, y)
+    y = ifelse(f==:sea2frz, x.sea2frz, y)
+    y = ifelse(f==:frz2mlt, x.frz2mlt, y)
+    y
+end
