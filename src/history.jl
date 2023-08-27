@@ -14,11 +14,11 @@ function porewaterhistory!(sc::SedimentColumn, p::Proposal, k::Constants, climhi
     isd = searchsortedfirst(climhist.t, p.onset, rev=true)
     #isd = ifelse(isd<climhist.n, isd, climhist.n)
     @inbounds for t = isd:climhist.n
-        benthic = climhist.x[t]
+        climate = climhist.x[t]
 
         @inbounds for j = 1:ka_dt
 
-            Clo, Oo, ρ = boundaryconditions(sc.Cl.o[1], sc.O.o[1], benthic, p.sea2frz, p.frz2mlt, p.dmlt, p.dfrz, sw.Cl, sw.O, k.dz, k.dt)
+            Clo, Oo, ρ = boundaryconditions(sc.Cl.o[1], sc.O.o[1], climate, p.sea2frz, p.frz2mlt, p.dmlt, p.dfrz, sw.Cl, sw.O, k.dz, k.dt)
 
 
             sc.Cl.o[1], sc.O.o[1], sc.rho.o[1] = Clo, Oo, ρ

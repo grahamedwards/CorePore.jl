@@ -2,7 +2,7 @@
 
 """
 
-    strictpriors(p, record_max_age, benthiclimits)
+    strictpriors(p, record_max_age, climatelimits)
 
 Evalute strict constraints on priors that will automatically reject a proposal:
 - Onset date beyond the climate record timespan (in ka)
@@ -10,7 +10,7 @@ Evalute strict constraints on priors that will automatically reject a proposal:
 - Nonphysical subglacial thresholds -- melting at lower benthic δ¹⁸O than freezing or values exceeding the record extrema.
 
 """
-function strictpriors(p::Proposal, record_max_age::Number, benthiclimits::Tuple)
+function strictpriors(p::Proposal, record_max_age::Number, climatelimits::Tuple)
     x=true
     x *= p.onset <= record_max_age
     x *= 0 < p.onset
@@ -19,8 +19,8 @@ function strictpriors(p::Proposal, record_max_age::Number, benthiclimits::Tuple)
     x *= p.dmlt > 0 
     
     x *= p.sea2frz < p.frz2mlt
-    x *= benthiclimits[1] < p.sea2frz
-    x *= p.frz2mlt < benthiclimits[2]
+    x *= climatelimits[1] < p.sea2frz
+    x *= p.frz2mlt < climatelimits[2]
 
     x
 end
@@ -65,10 +65,10 @@ porewatermetropolis...
 ```
 Not tested, yet...
 """
-function porewatermetropolis(p::Proposal, jumpsize::Proposal, prior::CoreData; burnin::Int=0, chainsteps::Int=100, k::Constants=Constants(), seawater::Seawater=mcmurdosound(), explore::Tuple=fieldnames(Proposal),benthic::ClimateHistory=LR04(), scalejump=1.8, rng::AbstractRNG=Random.Xoshiro())
+function porewatermetropolis(p::Proposal, jumpsize::Proposal, prior::CoreData; burnin::Int=0, chainsteps::Int=100, k::Constants=Constants(), seawater::Seawater=mcmurdosound(), explore::Tuple=fieldnames(Proposal),climate::ClimateHistory=LR04(), scalejump=1.8, rng::AbstractRNG=Random.Xoshiro())
 
-    record_max_age = first(benthic.t)
-    benthic_limits = extrema(benthic.x)
+    record_max_age = first(climate.t)
+    climate_limits = extrema(climate.x)
 
     ϕ = p # make a new proposal from the original.
 
@@ -77,9 +77,9 @@ function porewatermetropolis(p::Proposal, jumpsize::Proposal, prior::CoreData; b
     acceptance = falses(chainsteps)
 
     sc = SedimentColumn(k.nz,seawater...)
-    ka_dt = PorewaterDiffusion.dt_climatetimestep(benthic.t,k.dt)
+    ka_dt = PorewaterDiffusion.dt_climatetimestep(climate.t,k.dt)
     
-    porewaterhistory!(sc, ϕ, k, benthic, seawater, ka_dt)
+    porewaterhistory!(sc, ϕ, k, climate, seawater, ka_dt)
 
     ll= loglikelihood(prior.z,prior.Cl.mu,prior.Cl.sig,k.z,sc.Cl.p) + loglikelihood(prior.z,prior.O.mu,prior.O.sig,k.z,sc.O.p)
 
@@ -91,10 +91,10 @@ function porewatermetropolis(p::Proposal, jumpsize::Proposal, prior::CoreData; b
     
     @inbounds for i=Base.OneTo(burnin)
 
-        ϕ, jumpname,jump = proposaljump(p, jumpsize, rng=rng)
-        if strictpriors(ϕ, record_max_age, benthic_limits)
+        ϕ, jumpname, jump = proposaljump(p, jumpsize, rng=rng)
+        if strictpriors(ϕ, record_max_age, climate_limits)
 
-            porewaterhistory!(sc, ϕ, k, benthic, seawater, ka_dt)
+            porewaterhistory!(sc, ϕ, k, climate, seawater, ka_dt)
 
             llCl = loglikelihood(prior.z,prior.Cl.mu,prior.Cl.sig,k.z,sc.Cl.p) 
             llO = loglikelihood(prior.z,prior.O.mu,prior.O.sig,k.z,sc.O.p)
@@ -122,10 +122,10 @@ function porewatermetropolis(p::Proposal, jumpsize::Proposal, prior::CoreData; b
 
     @inbounds for i=Base.OneTo(chainsteps)
 
-        ϕ, jumpname,jump = proposaljump(p, jumpsize, rng=rng)
-        if strictpriors(ϕ, record_max_age, benthic_limits)
+        ϕ, jumpname, jump = proposaljump(p, jumpsize, rng=rng)
+        if strictpriors(ϕ, record_max_age, climate_limits)
 
-            porewaterhistory!(sc, ϕ, k, benthic, seawater, ka_dt)
+            porewaterhistory!(sc, ϕ, k, climate, seawater, ka_dt)
 
             llCl = loglikelihood(prior.z,prior.Cl.mu,prior.Cl.sig,k.z,sc.Cl.p) 
             llO = loglikelihood(prior.z,prior.O.mu,prior.O.sig,k.z,sc.O.p)
