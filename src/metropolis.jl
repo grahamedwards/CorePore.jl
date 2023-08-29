@@ -65,7 +65,7 @@ porewatermetropolis...
 ```
 Not tested, yet...
 """
-function porewatermetropolis(p::Proposal, jumpsize::Proposal, prior::CoreData; burnin::Int=0, chainsteps::Int=100, k::Constants=Constants(), seawater::Seawater=mcmurdosound(), explore::Tuple=fieldnames(Proposal),climate::ClimateHistory=LR04(), scalejump=1.8, rng::AbstractRNG=Random.Xoshiro())
+function porewatermetropolis(p::Proposal, jumpsize::Proposal, prior::CoreData; burnin::Int=0, chainsteps::Int=100, k::Constants=Constants(), seawater::Seawater=mcmurdosound(), explore::Tuple=fieldnames(Proposal), climate::ClimateHistory=LR04(), scalejump=1.8, rng::AbstractRNG=Random.Xoshiro())
 
     record_max_age = first(climate.t)
     climate_limits = extrema(climate.x)
@@ -83,7 +83,7 @@ function porewatermetropolis(p::Proposal, jumpsize::Proposal, prior::CoreData; b
 
     ll= loglikelihood(prior.z,prior.Cl.mu,prior.Cl.sig,k.z,sc.Cl.p) + loglikelihood(prior.z,prior.O.mu,prior.O.sig,k.z,sc.O.p)
 
-    clock, burnupdate, chainupdate = time(), div(burnin,20), div(chainsteps,20)
+    clock, burnupdate, chainupdate = time(), div.((burnin, chainsteps),20,RoundUp)...
     println("Beginning sequence...\n  $burnin burn-in iterations \n  $chainsteps recorded iterations\n ------------ \n\n " )
     flush(stdout)
 
@@ -91,7 +91,7 @@ function porewatermetropolis(p::Proposal, jumpsize::Proposal, prior::CoreData; b
     
     @inbounds for i=Base.OneTo(burnin)
 
-        ϕ, jumpname, jump = proposaljump(p, jumpsize, rng=rng)
+        ϕ, jumpname, jump = proposaljump(p, jumpsize, f=explore, rng=rng)
         if strictpriors(ϕ, record_max_age, climate_limits)
 
             porewaterhistory!(sc, ϕ, k, climate, seawater, ka_dt)
@@ -122,7 +122,7 @@ function porewatermetropolis(p::Proposal, jumpsize::Proposal, prior::CoreData; b
 
     @inbounds for i=Base.OneTo(chainsteps)
 
-        ϕ, jumpname, jump = proposaljump(p, jumpsize, rng=rng)
+        ϕ, jumpname, jump = proposaljump(p, jumpsize, f=explore, rng=rng)
         if strictpriors(ϕ, record_max_age, climate_limits)
 
             porewaterhistory!(sc, ϕ, k, climate, seawater, ka_dt)
