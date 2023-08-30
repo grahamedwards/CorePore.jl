@@ -65,7 +65,9 @@ porewatermetropolis...
 ```
 Not tested, yet...
 """
-function porewatermetropolis(p::Proposal, jumpsize::Proposal, prior::CoreData; burnin::Int=0, chainsteps::Int=100, k::Constants=Constants(), seawater::Seawater=mcmurdosound(), explore::Tuple=fieldnames(Proposal), climate::ClimateHistory=LR04(), scalejump=1.8, rng::AbstractRNG=Random.Xoshiro())
+function porewatermetropolis(p::Proposal, jumpsigma::Proposal, prior::CoreData; burnin::Int=0, chainsteps::Int=100, k::Constants=Constants(), seawater::Seawater=mcmurdosound(), explore::Tuple=fieldnames(Proposal), climate::ClimateHistory=LR04(), rng::AbstractRNG=Random.Xoshiro())
+
+    #scalejump=1.8
 
     record_max_age = first(climate.t)
     climate_limits = extrema(climate.x)
@@ -92,7 +94,7 @@ function porewatermetropolis(p::Proposal, jumpsize::Proposal, prior::CoreData; b
     
     @inbounds for i=Base.OneTo(burnin)
 
-        ϕ, jumpname, jump = proposaljump(p, jumpsize, f=explore, rng=rng)
+        ϕ, jumpname, jump = proposaljump(p, jumpsigma, f=explore, rng=rng)
         if strictpriors(ϕ, record_max_age, climate_limits)
 
             porewaterhistory!(sc, ϕ, k, climate, seawater, ka_dt)
@@ -106,7 +108,7 @@ function porewatermetropolis(p::Proposal, jumpsize::Proposal, prior::CoreData; b
 
         # Decide to accept or reject the proposal
         if log(rand(rng)) < (llϕ-ll) 
-            jumpsize = update(jumpsize,jumpname,abs(jump)*scalejump) # update jumpsize
+            #jumpsigma = update(jumpsigma,jumpname,abs(jump)*scalejump) # update jumpsigma
             p = ϕ  # update proposal
             ll = llϕ # Record new log likelihood
             burninacceptance=+1              
@@ -119,12 +121,12 @@ function porewatermetropolis(p::Proposal, jumpsize::Proposal, prior::CoreData; b
     end
 
     
-    println("\n\n$burnin burn-in steps complete. ℓ = $ll, acceptance rate= $(100burninacceptance÷ifelse(iszero(burnin),1,burnin)) %.\n\nCurrent guess: $p\nJumps = $jumpsize\n")
+    println("\n\n$burnin burn-in steps complete. ℓ = $ll, acceptance rate= $(100burninacceptance÷ifelse(iszero(burnin),1,burnin)) %.\n\nCurrent guess: $p\nJumps = $jumpsigma\n")
     flush(stdout)
 
     @inbounds for i=Base.OneTo(chainsteps)
 
-        ϕ, jumpname, jump = proposaljump(p, jumpsize, f=explore, rng=rng)
+        ϕ, jumpname, jump = proposaljump(p, jumpsigma, f=explore, rng=rng)
         if strictpriors(ϕ, record_max_age, climate_limits)
 
             porewaterhistory!(sc, ϕ, k, climate, seawater, ka_dt)
@@ -132,14 +134,13 @@ function porewatermetropolis(p::Proposal, jumpsize::Proposal, prior::CoreData; b
             llCl = loglikelihood(prior.z,prior.Cl.mu,prior.Cl.sig,k.z,sc.Cl.p) 
             llO = loglikelihood(prior.z,prior.O.mu,prior.O.sig,k.z,sc.O.p)
             llϕ = llCl + llO
-            #println("Cl: $llCl, O: $llO") # for troubleshooting.
         else
             llϕ=-Inf
         end
 
         # Decide to accept or reject the proposal
         if log(rand(rng)) < (llϕ-ll) 
-            jumpsize = update(jumpsize,jumpname,abs(jump)*scalejump) # update jumpsize
+            #jumpsigma = update(jumpsigma,jumpname,abs(jump)*scalejump) # update jumpsigma
             p = ϕ  # update proposal
             ll = llϕ # Record new log likelihood   
             acceptance[i] = true           
@@ -156,7 +157,7 @@ function porewatermetropolis(p::Proposal, jumpsize::Proposal, prior::CoreData; b
     end
     outnames = (fieldnames(Proposal)...,:ll, :accept)
     outvalues = ((chains[i,:] for i in axes(chains,1))..., lldist, acceptance)
-    NamedTuple{outnames}(outvalues), jumpsize
+    NamedTuple{outnames}(outvalues), jumpsigma
 end
 
 
