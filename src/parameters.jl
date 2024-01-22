@@ -349,7 +349,7 @@ end
 """
     getproposal(p, s)
 
-Returns the value corresponding to field the field of Symbol `s` in [`Proposal`](@ref) instance `p`. Use in lieu of `getproperty` to avoid allocations. 
+Returns the value corresponding to the field of Symbol `s` in [`Proposal`](@ref) instance `p`. Use in lieu of `getproperty` to avoid allocations. 
 
 """
 function getproposal(x::Proposal,f::Symbol)

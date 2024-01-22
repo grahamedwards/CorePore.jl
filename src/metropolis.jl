@@ -42,16 +42,16 @@ end
 
 """
 
-    stopwatch(i, n, clock)
+    stopwatch(i, n, t)
 
 Convenience function for [`porewatermetropolis`] that returns a String reporting the progress at step `i` for total steps `n` with start time `t` (in s since the epoch).
 
 """
-function stopwatch(i::Integer,n::Integer,clock::Number)
+function stopwatch(i::Integer,n::Integer,t::Number)
     pd = 10 * i ÷ n
     bar = "■"^pd * "□"^(10-pd)
-    t = round((time() - clock) / 60,digits=2)
-    string("0% |", bar,"| 100%  ||  step: $i / $n  ||  time: $t m")
+    tt = round((time() - t) / 60,digits=2)
+    string("0% |", bar,"| 100%  ||  step: $i / $n  ||  time: $tt m")
 end
 
 
