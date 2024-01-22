@@ -9,7 +9,7 @@
 ```julia
 function boundaryconditions(Cl, d18O, x, sea2freeze,freeze2melt, meltrate, freezerate, Clsw, d18Osw, dz, dt)
 ```
-Calculates sediment surface boundary condition for δ¹⁸O (`d18O`) and [Cl⁻] (`Cl`), based on the thermodynamic state described by the current current benthic δ¹⁸O value `x` and the threshold values corresponding to subglacial freezing `sea2freeze` and subglacial melting `freeze2melt`.
+Calculates sediment surface boundary condition for δ¹⁸O (`d18O`) and chloridity (`Cl`), based on the thermodynamic state described by the current current benthic δ¹⁸O value `x` and the threshold values corresponding to subglacial freezing `sea2freeze` and subglacial melting `freeze2melt`.
 
 For melting or freezing states, calculates boundary condition from the assumed `meltrate`, `freezerate`, timestep `dt`, length-step `dt`, and composition of seawater `Clsw` and `d18Osw`.
 

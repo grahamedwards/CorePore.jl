@@ -33,7 +33,7 @@ function proposaljump(p::Proposal, j::Proposal; rng::AbstractRNG, f::Tuple=field
     jump = getproposal(j,jumpname) * randn(rng)
     jumped = getproposal(p,jumpname) + jump
 
-    (update(p,jumpname,jumped) , jumpname , jump )
+    (update(p,jumpname,jumped) , jumpname , abs(jump) )
 end
 
 
@@ -67,7 +67,7 @@ Not tested, yet...
 """
 function porewatermetropolis(p::Proposal, jumpsigma::Proposal, prior::CoreData; burnin::Int=0, chainsteps::Int=100, k::Constants=Constants(), seawater::Seawater=mcmurdosound(), explore::Tuple=fieldnames(Proposal), climate::ClimateHistory=LR04(), rng::AbstractRNG=Random.Xoshiro())
 
-    #scalejump=1.8
+    scalejump=1.8
 
     record_max_age = first(climate.t)
     climate_limits = extrema(climate.x)
@@ -108,7 +108,7 @@ function porewatermetropolis(p::Proposal, jumpsigma::Proposal, prior::CoreData; 
 
         # Decide to accept or reject the proposal
         if log(rand(rng)) < (llϕ-ll) 
-            #jumpsigma = update(jumpsigma,jumpname,abs(jump)*scalejump) # update jumpsigma
+            jumpsigma = update(jumpsigma, jumpname, jump * scalejump) # update jumpsigma
             p = ϕ  # update proposal
             ll = llϕ # Record new log likelihood
             burninacceptance=+1              
@@ -140,7 +140,7 @@ function porewatermetropolis(p::Proposal, jumpsigma::Proposal, prior::CoreData; 
 
         # Decide to accept or reject the proposal
         if log(rand(rng)) < (llϕ-ll) 
-            #jumpsigma = update(jumpsigma,jumpname,abs(jump)*scalejump) # update jumpsigma
+            jumpsigma = update(jumpsigma, jumpname, jump * scalejump) # update jumpsigma
             p = ϕ  # update proposal
             ll = llϕ # Record new log likelihood   
             acceptance[i] = true           

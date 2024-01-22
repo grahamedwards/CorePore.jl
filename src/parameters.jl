@@ -56,7 +56,7 @@ Vectors must all be of the same length. If Cl and δ¹⁸O sampling is not 1:1, 
 
     CoreData(z, m, σ, measurement)
 
-Same as above, but for a core with only chlorinity or δ¹⁸O data (the other Vectors are empty to return null values in [`log-likelihood`](@ref) calculations). Provide sample depths `z`, measured means `m`, 1σ uncertainties `σ`, and the `measurement` as a symbol, e.g. `:Cl` or `:O`. 
+Same as above, but for a core with only chlorinity or δ¹⁸O data (the other Vectors are empty to return null values in [`loglikelihood`](@ref) calculations). Provide sample depths `z`, measured means `m`, 1σ uncertainties `σ`, and the `measurement` as a symbol, e.g. `:Cl` or `:O`. 
 
 ---
 
@@ -182,7 +182,7 @@ end
 
     SedimentColumn(n::Int, [, Cl, O])
 
-`struct` to contain `PorewaterProperty`s for the porewater properties of [Cl⁻] (`Cl`), δ¹⁸O (`O`), and density (`rho`).
+`struct` to contain `PorewaterProperty`s for the porewater properties of chloridity (`Cl`), δ¹⁸O (`O`), and density (`rho`).
 
 Constructor function returns an instance of `SedimentColumn` with `PorewaterProperty` vectors of length `n`.  Optionally provide values for `Cl`, `O`, and `rho` (otherwise values are undefined). 
 
