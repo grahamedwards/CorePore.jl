@@ -90,7 +90,7 @@ Calculate diffusive and advective transport of chlorinity and isotope-traced wat
 
 Overwrites the `o` and `p` PorewaterProperty fields of `sc` -- a [`SedimentColumn`](@ref) with pre-existing conditions of `Cl`, `O`, and `rho` in its `o` fields.
 
-relies on: [`velocity`](@ref), [`density`](@ref), [diffusionadvection](@ref), 
+relies on: [`velocity`](@ref), [`density`](@ref), [`diffusionadvection`](@ref), 
 
 see also: [`SedimentColumn`](@ref), [`Constants`](@ref) 
 

@@ -38,7 +38,7 @@ end
 porewaterhistory(proposals [; k=Constants(), climatehistory=LR04(), seawater=mcmurdosound()])
 ```
 
-Calculate the porewater advection-diffusion history of chlorinity and O-isotope-traced water in a sediment column described by properties in `k` (::[`Constants`](@ref)) over a given [`Climatehistory`](@ref) ([`LR04`](@ref) by default) and coretop `seawater` compositions.
+Calculate the porewater advection-diffusion history of chlorinity and O-isotope-traced water in a sediment column described by properties in `k` (::[`Constants`](@ref)) over a given [`ClimateHistory`](@ref) ([`LR04`](@ref) by default) and coretop `seawater` compositions.
 
 The provided `proposals` (as custom type [`Proposal`](@ref)) describe the sensitivity and response of the system to climate fluctuations as recorded in `climatehistory`.
 
