@@ -9,7 +9,6 @@ Returns a NamedTuple with values of chlorinity `Cl` and δ¹⁸O `O`(necessarily
 see also: [`mcmurdoshelf`](@ref), [`mcmurdosound`](@ref), [`PorewaterDiffusion.Seawater`](@ref)
 
 """
-
 seawater(Cl::Number,O::Number) = (; Cl=float(Cl), O=float(O))
 
 """
