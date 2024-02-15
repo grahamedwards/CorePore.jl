@@ -193,9 +193,7 @@ struct SedimentColumn
     O::PorewaterProperty
     rho::PorewaterProperty
 end
-
 SedimentColumn(n::Int) = SedimentColumn(PorewaterProperty(n), PorewaterProperty(n), PorewaterProperty(n))
-
 SedimentColumn(n::Int, c::Number, o::Number) = SedimentColumn(PorewaterProperty(n,c), PorewaterProperty(n,o), PorewaterProperty(n,density(c)))
 
 
@@ -330,8 +328,17 @@ struct Proposal
 end
 
 
+"""
+    update(p, f, x::Number)
+
+Update field `f` of [`Proposal`](@ref) instance `p` with value `x`.
+
+"""
 function update(x::Proposal, f::Symbol,v::Number)
 
+    @assert f ∈ fieldnames(Proposal)
+    v = float(v)
+    
     o = ifelse(f==:onset, v, x.onset)
     df = ifelse(f==:dfrz, v, x.dfrz)
     dm = ifelse(f==:dmlt, v, x.dmlt)
@@ -351,7 +358,9 @@ end
 Returns the value corresponding to the field of Symbol `s` in [`Proposal`](@ref) instance `p`. Use in lieu of `getproperty` to avoid allocations. 
 
 """
-function getproposal(x::Proposal,f::Symbol)
+function getproposal(x::Proposal, f::Symbol)
+    @assert f ∈ fieldnames(Proposal)
+
     y=0.
     y = ifelse(f==:onset, x.onset,y)
     y = ifelse(f==:dfrz, x.dfrz, y)
