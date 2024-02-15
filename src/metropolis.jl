@@ -1,45 +1,3 @@
-
-
-"""
-
-    strictpriors(p, record_max_age, climatelimits)
-
-Evalute strict constraints on priors that will automatically reject a proposal:
-- Onset date beyond the climate record timespan (in ka)
-- Negative freezing or melting rates.
-- Nonphysical subglacial thresholds -- melting at lower benthic δ¹⁸O than freezing or values exceeding the record extrema.
-
-"""
-function strictpriors(p::Proposal, record_max_age::Number, climatelimits::Tuple)
-    x=true
-    x *= p.onset <= record_max_age
-    x *= 0 < p.onset
-
-    x *= p.dfrz > 0 
-    x *= p.dmlt > 0 
-    
-    x *= p.sea2frz < p.frz2mlt
-    x *= climatelimits[1] < p.sea2frz
-    x *= p.frz2mlt < climatelimits[2]
-
-    x
-end
-
-
-
-function proposaljump(p::Proposal, j::Proposal; rng::AbstractRNG, f::Tuple=fieldnames(Proposal))
-
-    jumpname::Symbol = rand(rng,f)
-    jump = getproposal(j,jumpname) * randn(rng)
-    jumped = getproposal(p,jumpname) + jump
-
-    (update(p,jumpname,jumped) , jumpname , abs(jump) )
-end
-
-
-
-
-
 """
 
     stopwatch(i, n, t)
@@ -54,7 +12,49 @@ function stopwatch(i::Integer,n::Integer,t::Number)
     string("0% |", bar,"| 100%  ||  step: $i / $n  ||  time: $tt m")
 end
 
+"""
 
+    strictpriors(p::Proposal, record_max_age::Number, climatelimits::Tuple{Number,Number})
+
+Evalute strict constraints on priors that will automatically reject a proposal with...
+- Onset date beyond the climate record timespan (in ka) (`record_max_age`)
+- Nonphysical subglacial thresholds -- melting at lower benthic δ¹⁸O than freezing or values exceeding the record extrema (`climatelimits`).
+
+"""
+function strictpriors(p::Proposal, record_max_age::Number, climatelimits::Tuple{Number,Number})
+    x=true
+    x *= p.onset <= record_max_age
+    x *= 0 < p.onset
+    
+    x *= p.sea2frz < p.frz2mlt
+    x *= climatelimits[1] < p.sea2frz
+    x *= p.frz2mlt < climatelimits[2]
+
+    x
+end
+
+
+
+"""
+
+    PorewaterDiffusion.proposaljump(p::Proposal, σ::Proposal; f=fieldnames(Proposal), rng::AbstractRNG)
+
+Add a random jump to a randomly selected field of `p` with a corresponding normal jumping distribution defined by the corresponding field in `σ`. The possible fields may be specified by providing a Tuple of Symbols `f`, and a specific RNG seed may be provided.
+
+Note that `:dmlt` and `:dfrz` are drawn from a lognormal jumping distribution (where `σ` is in log-space.)
+
+"""
+function proposaljump(p::Proposal, j::Proposal; rng::AbstractRNG=Xoshiro(), f::Tuple{Vararg{Symbol}}=fieldnames(Proposal))
+
+    jumpname = rand(rng,f)
+    logdist = (jumpname == :dmlt) | (jumpname == :dfrz)
+    jump = getproposal(j,jumpname) * randn(rng)
+    x = getproposal(p,jumpname)
+    x = ifelse(logdist, log(x),x)
+    x += jump
+    x = ifelse(logdist, exp(x),x)
+    (update(p, jumpname, x) , jumpname , abs(jump) )
+end
 
 
 
@@ -65,9 +65,9 @@ porewatermetropolis...
 ```
 Not tested, yet...
 """
-function porewatermetropolis(p::Proposal, jumpsigma::Proposal, prior::CoreData; burnin::Int=0, chainsteps::Int=100, k::Constants=Constants(), seawater::Seawater=mcmurdosound(), explore::Tuple=fieldnames(Proposal), climate::ClimateHistory=LR04(), rng::AbstractRNG=Random.Xoshiro())
+function porewatermetropolis(p::Proposal, jumpsigma::Proposal, prior::CoreData; burnin::Int=0, chainsteps::Int=100, k::Constants=Constants(), seawater::Seawater=mcmurdosound(), explore::Tuple{Vararg{Symbol}}=fieldnames(Proposal), climate::ClimateHistory=LR04(), rng::AbstractRNG=Random.Xoshiro())
 
-    scalejump=1.8
+    scalejump=2.4
 
     record_max_age = first(climate.t)
     climate_limits = extrema(climate.x)
@@ -82,9 +82,10 @@ function porewatermetropolis(p::Proposal, jumpsigma::Proposal, prior::CoreData; 
     ka_dt = PorewaterDiffusion.dt_climatetimestep(climate.t,k.dt)
     
     porewaterhistory!(sc, ϕ, k, climate, seawater, ka_dt)
-
-    ll= loglikelihood(prior.z,prior.Cl.mu,prior.Cl.sig,k.z,sc.Cl.p) + loglikelihood(prior.z,prior.O.mu,prior.O.sig,k.z,sc.O.p)
-
+    
+    llCl, llO = loglikelihood(prior.z,prior.Cl.mu,prior.Cl.sig,k.z,sc.Cl.p), loglikelihood(prior.z,prior.O.mu,prior.O.sig,k.z,sc.O.p)
+    ll = llCl + llO
+    
     clock = time()
     burnupdate, chainupdate = div.((ifelse(iszero(burnin),1,burnin), ifelse(iszero(chainsteps),1,chainsteps)),20,RoundUp)
     println("Beginning sequence...\n  $burnin burn-in iterations \n  $chainsteps recorded iterations\n ------------ \n\n " )
@@ -94,13 +95,13 @@ function porewatermetropolis(p::Proposal, jumpsigma::Proposal, prior::CoreData; 
     
     @inbounds for i=Base.OneTo(burnin)
 
+
         ϕ, jumpname, jump = proposaljump(p, jumpsigma, f=explore, rng=rng)
         if strictpriors(ϕ, record_max_age, climate_limits)
 
             porewaterhistory!(sc, ϕ, k, climate, seawater, ka_dt)
 
-            llCl = loglikelihood(prior.z,prior.Cl.mu,prior.Cl.sig,k.z,sc.Cl.p) 
-            llO = loglikelihood(prior.z,prior.O.mu,prior.O.sig,k.z,sc.O.p)
+            llCl, llO = loglikelihood(prior.z,prior.Cl.mu,prior.Cl.sig,k.z,sc.Cl.p), loglikelihood(prior.z,prior.O.mu,prior.O.sig,k.z,sc.O.p)
             llϕ = llCl + llO
         else
             llϕ=-Inf
@@ -109,9 +110,8 @@ function porewatermetropolis(p::Proposal, jumpsigma::Proposal, prior::CoreData; 
         # Decide to accept or reject the proposal
         if log(rand(rng)) < (llϕ-ll) 
             jumpsigma = update(jumpsigma, jumpname, jump * scalejump) # update jumpsigma
-            p = ϕ  # update proposal
-            ll = llϕ # Record new log likelihood
-            burninacceptance=+1              
+            p, ll = ϕ, llϕ  # update proposal and log-likelihood
+            burninacceptance=+1        
         end
 
         if iszero(i % burnupdate) # Update progress
@@ -121,30 +121,29 @@ function porewatermetropolis(p::Proposal, jumpsigma::Proposal, prior::CoreData; 
     end
 
     
-    println("\n\n$burnin burn-in steps complete. ℓ = $ll, acceptance rate= $(100burninacceptance÷ifelse(iszero(burnin),1,burnin)) %.\n\nCurrent guess: $p\nJumps = $jumpsigma\n")
-    flush(stdout)
+    println("\n\n$burnin burn-in steps complete. ℓ = $ll, acceptance rate= $(100burninacceptance÷ifelse(iszero(burnin),1,burnin)) %.\n\nCurrent guess: $p\nJumps = $jumpsigma\n"); flush(stdout)
 
-    @inbounds for i=Base.OneTo(chainsteps)
+
+    @inbounds for i = 1:chainsteps
 
         ϕ, jumpname, jump = proposaljump(p, jumpsigma, f=explore, rng=rng)
         if strictpriors(ϕ, record_max_age, climate_limits)
 
             porewaterhistory!(sc, ϕ, k, climate, seawater, ka_dt)
 
-            llCl = loglikelihood(prior.z,prior.Cl.mu,prior.Cl.sig,k.z,sc.Cl.p) 
-            llO = loglikelihood(prior.z,prior.O.mu,prior.O.sig,k.z,sc.O.p)
+            llCl, llO = loglikelihood(prior.z,prior.Cl.mu,prior.Cl.sig,k.z,sc.Cl.p), loglikelihood(prior.z,prior.O.mu,prior.O.sig,k.z,sc.O.p)
             llϕ = llCl + llO
         else
             llϕ=-Inf
         end
-
+        
         # Decide to accept or reject the proposal
         if log(rand(rng)) < (llϕ-ll) 
             jumpsigma = update(jumpsigma, jumpname, jump * scalejump) # update jumpsigma
-            p = ϕ  # update proposal
-            ll = llϕ # Record new log likelihood   
-            acceptance[i] = true           
+            p, ll = ϕ, llϕ  # update proposal and log-likelihood
+            acceptance[i] = true   
         end
+        
 
         chains[:,i] .= p.onset, p.dfrz, p.dmlt, p.sea2frz, p.frz2mlt
         lldist[i] = ll
@@ -157,7 +156,7 @@ function porewatermetropolis(p::Proposal, jumpsigma::Proposal, prior::CoreData; 
     end
     outnames = (fieldnames(Proposal)...,:ll, :accept)
     outvalues = ((chains[i,:] for i in axes(chains,1))..., lldist, acceptance)
-    NamedTuple{outnames}(outvalues), jumpsigma
+    NamedTuple{outnames}(outvalues)
 end
 
 
