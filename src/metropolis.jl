@@ -14,21 +14,24 @@ end
 
 """
 
-    strictpriors(p::Proposal, record_max_age::Number, climatelimits::Tuple{Number,Number})
+    PorewaterDiffusion.strictpriors(p::Proposal, record_max_age::Number, climatelimits::Tuple{Number,Number}, k::Constants)
 
 Evalute strict constraints on priors that will automatically reject a proposal with...
 - Onset date beyond the climate record timespan (in ka) (`record_max_age`)
 - Nonphysical subglacial thresholds -- melting at lower benthic δ¹⁸O than freezing or values exceeding the record extrema (`climatelimits`).
+- Freezing rate is ≤ 0.4dt/dz (to prevent an error in a log-calculation in [`PorewaterDiffusion.boundaryconditions`](@ref)).
 
 """
-function strictpriors(p::Proposal, record_max_age::Number, climatelimits::Tuple{Number,Number})
+function strictpriors(p::Proposal, record_max_age::Number, climatelimits::Tuple{Number,Number}, k::Constants)
     x=true
-    x *= p.onset <= record_max_age
-    x *= 0 < p.onset
+    x &= p.onset <= record_max_age
+    x &= 0 < p.onset
     
-    x *= p.sea2frz < p.frz2mlt
-    x *= climatelimits[1] < p.sea2frz
-    x *= p.frz2mlt < climatelimits[2]
+    x &= p.sea2frz < p.frz2mlt
+    x &= climatelimits[1] < p.sea2frz
+    x &= p.frz2mlt < climatelimits[2]
+
+    x &= p.dfrz <= 0.4k.dz/k.dt
 
     x
 end
@@ -97,7 +100,7 @@ function porewatermetropolis(p::Proposal, jumpsigma::Proposal, prior::CoreData; 
 
 
         ϕ, jumpname, jump = proposaljump(p, jumpsigma, f=explore, rng=rng)
-        if strictpriors(ϕ, record_max_age, climate_limits)
+        if strictpriors(ϕ, record_max_age, climate_limits, k)
 
             porewaterhistory!(sc, ϕ, k, climate, seawater, ka_dt)
 
@@ -127,7 +130,7 @@ function porewatermetropolis(p::Proposal, jumpsigma::Proposal, prior::CoreData; 
     @inbounds for i = 1:chainsteps
 
         ϕ, jumpname, jump = proposaljump(p, jumpsigma, f=explore, rng=rng)
-        if strictpriors(ϕ, record_max_age, climate_limits)
+        if strictpriors(ϕ, record_max_age, climate_limits, k)
 
             porewaterhistory!(sc, ϕ, k, climate, seawater, ka_dt)
 

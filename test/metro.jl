@@ -1,10 +1,13 @@
 
 # strictpriors
-spargs = (1000., (1.,4.))
-@test PorewaterDiffusion.strictpriors(Proposal(500,1,1,2,3), spargs...)
-@test !PorewaterDiffusion.strictpriors(Proposal(1100,1,1,2,3), spargs...)
-@test !PorewaterDiffusion.strictpriors(Proposal(500,1,1,0,3), spargs...)
-@test !PorewaterDiffusion.strictpriors(Proposal(500,1,1,2,5), spargs...)
+spargs = (1000., (1.,4.), Constants())
+@test PorewaterDiffusion.strictpriors(Proposal(500,.1,1,2,3), spargs...) # passing test
+@test !PorewaterDiffusion.strictpriors(Proposal(1100,.1,1,2,3), spargs...) # onset too old
+@test !PorewaterDiffusion.strictpriors(Proposal(0,.1,1,2,3), spargs...) # onset too young
+@test !PorewaterDiffusion.strictpriors(Proposal(500,.1,1,0,3), spargs...) # sea2frz too low
+@test !PorewaterDiffusion.strictpriors(Proposal(500,.1,1,2,5), spargs...) # frz2mlt too high
+@test !PorewaterDiffusion.strictpriors(Proposal(500,.1,1,3,2), spargs...) # sez2frz < frz2mlt 
+@test !PorewaterDiffusion.strictpriors(Proposal(500,.3,1,2,3), spargs...) # p.dfrz too high.
 
 
 # proposaljump
