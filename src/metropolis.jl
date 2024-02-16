@@ -20,6 +20,7 @@ Evalute strict constraints on priors that will automatically reject a proposal w
 - Onset date beyond the climate record timespan (in ka) (`record_max_age`)
 - Nonphysical subglacial thresholds -- melting at lower benthic δ¹⁸O than freezing or values exceeding the record extrema (`climatelimits`).
 - Freezing rate is ≤ 0.4dt/dz (to prevent an error in a log-calculation in [`PorewaterDiffusion.boundaryconditions`](@ref)).
+- Annual melting rate must be less than the thickness of the Antarctic Ice Sheet (~5 km)
 
 """
 function strictpriors(p::Proposal, record_max_age::Number, climatelimits::Tuple{Number,Number}, k::Constants)
@@ -32,6 +33,7 @@ function strictpriors(p::Proposal, record_max_age::Number, climatelimits::Tuple{
     x &= p.frz2mlt < climatelimits[2]
 
     x &= p.dfrz <= 0.4k.dz/k.dt
+    x &= p.dmlt < 5000.
 
     x
 end
