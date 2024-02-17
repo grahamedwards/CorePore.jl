@@ -8,7 +8,7 @@ spargs = (1000., (1.,4.), Constants())
 @test !PorewaterDiffusion.strictpriors(Proposal(500,.1,1,2,5), spargs...) # frz2mlt too high
 @test !PorewaterDiffusion.strictpriors(Proposal(500,.1,1,3,2), spargs...) # sez2frz < frz2mlt 
 @test !PorewaterDiffusion.strictpriors(Proposal(500,.3,1,2,3), spargs...) # p.dfrz too high.
-@test !PorewaterDiffusion.strictpriors(Proposal(500,.1,1e5,2,3), spargs...) # p.dfrz too high.
+@test !PorewaterDiffusion.strictpriors(Proposal(500,.1,20.,2,3), spargs...) # p.dfrz too high.
 
 
 # proposaljump
