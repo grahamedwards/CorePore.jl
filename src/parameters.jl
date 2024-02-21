@@ -105,7 +105,7 @@ end
 
     andrill2a
 
-Generate a [`CoreData`](@ref) instance with data from core ANDRILL-2A (from Tracy+ 2010, [doi:10.1130/G30849.1](https://doi.org/10.1130/G30849.1)). 
+Generate a [`CoreData`](@ref) instance with data from core ANDRILL-2A (from Frank+ 2010, [doi:10.1130/G30849.1](https://doi.org/10.1130/G30849.1)). 
 
 see also: [`CoreData`](@ref)
 
@@ -119,7 +119,7 @@ function andrill2a()
 
     Om = [-1.3, -2.7, -5.6, -8.1, -9.8, -10.0, -10.6, -10.3, missing, -10.9, -5.2, -8.5, -9.7, -10.6, -10.2, missing, -9.3, missing, missing, missing, missing]
 
-    Os = fill(0.1, length(Om))
+    Os = fill(0.1, length(Om)) # based on UCSC isotope lab.
 
     CoreData(z, Clm,Cls, Om, Os)
 end
@@ -136,16 +136,14 @@ see also: [`CoreData`](@ref)
 
 """
 function andrill1b()
-    z = [0.,]
+    z = [9.95, 20.55, 30.82, 39.36, 54.06, 69.36, 79.59, 96.75, 112.51, 138.76, 189.775, 223.955, 251.45, 284.3, 375.19, 410.25, 477.8, 519.96, 572.685, 610.105, 649.575, 668.205, 798.055, 848.985, 901.775, 936.78, 967.58, 1076.72]
 
-    Clm = (35.45/1000) .* [0.,]
+    Clm = (35.45/1000) .* [475.1914646, 645.7566202, 680.8842872, 712.4045889, 792.2377042, 849.2664369, 810.2374237, 811.5119651, 859.4921896, 797.2260501, 868.1681727, 823.9844697, 816.0152075, 828.4942182, 935.8452392, 901.5187553, 918.5586697, 889.6388733, 838.8985985, 759.6680245, 743.8599926, 658.1991176, 624.5028023, 593.2801276, 563.1605987, 552.8358149, 568.6385208, 485.6941693]
 
     Cls = .02Clm # ±2% precision reported
 
-    Om = @. 30.92 + 1.03092 * [0.] # will need to be converted from carbonate values in vpdb to water values in vsmow. Not too hard, just need to know temperature. 
-
-    # δ18O(VSMOW) = 1.03092 × δ18O(VPDB) + 30.92 # [Kim+ 2015](https://doi.org/10.1016/j.gca.2015.02.011)
-
+    Om = [missing, missing, missing, -9.29, -8.94, -7.56, -7.94, -8.17, -3.03, -1.99, -8.24, -8.48, -7.66, -7.37, -7.35, -7.09, -6.29, -6.21, -5.92, -3.65, missing, missing, missing, missing, -1.74, -1.62, missing, missing]
+    
     Os = fill(0.1, length(Om)) # based on UCSC isotope lab.
 
     CoreData(z, Clm,Cls, Om, Os)
