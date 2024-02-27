@@ -2,44 +2,54 @@
 
 """
 
-    seawater(Cl, O)
+    water(Cl, O)
 
 Returns a NamedTuple with values of chlorinity `Cl` and δ¹⁸O `O`(necessarily `Float64`s). 
 
-see also: [`mcmurdoshelf`](@ref), [`mcmurdosound`](@ref), [`PorewaterDiffusion.Seawater`](@ref)
+see also: [`mcmurdoshelf`](@ref), [`mcmurdosound`](@ref), [`PorewaterDiffusion.Water`](@ref)
 
 """
-seawater(Cl::Number,O::Number) = (; Cl=float(Cl), O=float(O))
+water(Cl::Number,O::Number) = (; Cl=float(Cl), O=float(O))
 
 """
-    Seawater
+    Water
 
 `DataType` declared as a shorthand for `NamedTuple{(:Cl, :O), Tuple{Float64,Float64}}` because Graham likes the splatting functionality of NamedTuples and structs don't have it!
 
-see also: [`seawater`](@ref)
+see also: [`water`](@ref)
     
 """
-const Seawater = NamedTuple{(:Cl, :O), Tuple{Float64,Float64}}
+const Water = NamedTuple{(:Cl, :O), Tuple{Float64,Float64}}
 
 """
     mcmurdoshelf()
 
-Generate a [`seawater`](@ref) NamedTuple with coretop porewater compositions from the McMurdo ice shelf. Pairs with core ANDRILL-1B.
+Generate a [`water`](@ref) NamedTuple with coretop porewater compositions from the McMurdo ice shelf. Pairs with core ANDRILL-1B.
 
-see also: [`seawater`](@ref), [`andrill1b`](@ref)
+see also: [`water`](@ref), [`andrill1b`](@ref)
 
 """
-mcmurdoshelf() = seawater(19.2657,-0.33)
+mcmurdoshelf() = water(19.2657,-0.33)
 
 """
     mcmurdosound()
 
-Generate a [`seawater`](@ref) NamedTuple with southern McMurdo Sound seawater compositions. Pair with core ANDRILL-2A.
+Generate a [`water`](@ref) NamedTuple with southern McMurdo Sound water compositions. Pair with core ANDRILL-2A.
 
-see also: [`seawater`](@ref), [`andrill2a`](@ref)
+see also: [`water`](@ref), [`andrill2a`](@ref)
 
 """
-mcmurdosound() = seawater(19.81655,-1.0)
+mcmurdosound() = water(19.81655,-1.0)
+
+"""
+    deepbonney()
+
+    Generate a [`water`](@ref) NamedTuple with >30 m Lake Bonney water compositions. Use for sediment column basal boundary condition. Chloridity (143.333 g/L  ÷ 1.2 kg/L ≈ 119 g/kg) from Angino+ 1963 ([doi:10.1086/626879](https://doi.org/10.1086/626879)) and δ¹⁸O from Matsubaya+ 1979 ([doi:10.1016/0016-7037(79)90042-5](https://doi.org/10.1016/0016-7037(79)90042-5)).
+    
+see also: [`water`](@ref).
+
+"""
+deepbonney() = water(119.44416666666667,-25.2)
 
 
 

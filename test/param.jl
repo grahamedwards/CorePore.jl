@@ -1,4 +1,4 @@
-@test seawater(1,2).Cl == seawater(1.,2.).Cl
+@test water(1,2).Cl == water(1.,2.).Cl
 @test mcmurdoshelf().O == -0.33 && mcmurdoshelf().Cl == 19.2657
 @test mcmurdosound().O == -1.0 && mcmurdosound().Cl == 19.81655
 

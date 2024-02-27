@@ -9,7 +9,7 @@ In-place version of [`porewaterhistory`](@ref), which takes every input as an ar
 see also: [`porewaterhistory`](@ref)
 
 """
-function porewaterhistory!(sc::SedimentColumn, p::Proposal, k::Constants, climhist::ClimateHistory, sw::Seawater, ka_dt::Int)
+function porewaterhistory!(sc::SedimentColumn, p::Proposal, k::Constants, climhist::ClimateHistory, sw::Water, ka_dt::Int)
     sc.Cl.p .= sc.Cl.o .= sw.Cl
     sc.O.p .= sc.O.o .= sw.O
 
@@ -48,7 +48,7 @@ See [`diffuseadvectcolumn!`](@ref) for the underlying diffusion-advection transp
 see also: [`porewaterhistory!`](@ref), [`Proposal`](@ref), [`Constants`](@ref), [`LR04`](@ref), [`seawater`](@ref)
 
 """
-function porewaterhistory(p::Proposal; k::Constants=Constants(), climatehistory::ClimateHistory=LR04(), seawater::Seawater=mcmurdosound())
+function porewaterhistory(p::Proposal; k::Constants=Constants(), climatehistory::ClimateHistory=LR04(), seawater::Water=mcmurdosound())
 
     sc = SedimentColumn(k.nz,seawater...)
     porewaterhistory!(sc, p, k, climatehistory, seawater, dt_climatetimestep(climatehistory.t,k.dt))

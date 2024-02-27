@@ -20,11 +20,12 @@ Evalute strict constraints on priors that will automatically reject a proposal w
 - Onset date beyond the climate record timespan (in ka) (`record_max_age`)
 - Nonphysical subglacial thresholds -- melting at lower benthic δ¹⁸O than freezing or values exceeding the record extrema (`climatelimits`).
 - Freezing rate is ≤ 0.4dt/dz (to prevent an error in a log-calculation in [`PorewaterDiffusion.boundaryconditions`](@ref)).
-- Annual melting rate must be less than that observed at the Thwaites grounding line (<10 m/yr, [Davis+ 2023](https://www.nature.com/articles/s41586-022-05586-0)).
+- Annual melting rate must be no more than that observed at the Thwaites grounding line (<10 m/yr, [Davis+ 2023](https://www.nature.com/articles/s41586-022-05586-0)).
 
 """
 function strictpriors(p::Proposal, record_max_age::Number, climatelimits::Tuple{Number,Number}, k::Constants)
     x=true
+    
     x &= p.onset <= record_max_age
     x &= 0 < p.onset
     
@@ -33,7 +34,7 @@ function strictpriors(p::Proposal, record_max_age::Number, climatelimits::Tuple{
     x &= p.frz2mlt < climatelimits[2]
 
     x &= p.dfrz <= 0.4k.dz/k.dt
-    x &= p.dmlt < 10.
+    x &= p.dmlt <= 10.
 
     x
 end
@@ -70,7 +71,7 @@ porewatermetropolis...
 ```
 Not tested, yet...
 """
-function porewatermetropolis(p::Proposal, jumpsigma::Proposal, prior::CoreData; burnin::Int=0, chainsteps::Int=100, k::Constants=Constants(), seawater::Seawater=mcmurdosound(), explore::Tuple{Vararg{Symbol}}=fieldnames(Proposal), climate::ClimateHistory=LR04(), rng::AbstractRNG=Random.Xoshiro())
+function porewatermetropolis(p::Proposal, jumpsigma::Proposal, prior::CoreData; burnin::Int=0, chainsteps::Int=100, k::Constants=Constants(), seawater::Water=mcmurdosound(), explore::Tuple{Vararg{Symbol}}=fieldnames(Proposal), climate::ClimateHistory=LR04(), rng::AbstractRNG=Random.Xoshiro())
 
     scalejump=2.4
 
