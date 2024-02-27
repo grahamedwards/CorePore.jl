@@ -45,7 +45,7 @@ The provided `proposals` (as custom type [`Proposal`](@ref)) describe the sensit
 
 See [`diffuseadvectcolumn!`](@ref) for the underlying diffusion-advection transport calculations.
 
-see also: [`porewaterhistory!`](@ref), [`Proposal`](@ref), [`Constants`](@ref), [`LR04`](@ref), [`seawater`](@ref)
+see also: [`porewaterhistory!`](@ref), [`Proposal`](@ref), [`Constants`](@ref), [`LR04`](@ref), [`water`](@ref)
 
 """
 function porewaterhistory(p::Proposal; k::Constants=Constants(), climatehistory::ClimateHistory=LR04(), seawater::Water=mcmurdosound())
