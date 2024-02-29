@@ -233,6 +233,7 @@ end
 
 
 """
+
     ClimateHistory
 
 `DataType` declared as a shorthand for 
@@ -252,8 +253,8 @@ ClimateHistory = NamedTuple{(:t, :x, :n), Tuple{StepRangeLen{Float64, Base.Twice
 """
 
 ```julia
-    Constants( ; k, dt, dz, depth )
-````
+Constants( ; k, dt, dz, depth )
+```
 
 Returns a `Constants` struct containing constants and coefficients used in diffusion history calculations. The inputs and their default values are listed in the table below. From these it calculates a few convenient variables---the product `dt * dz` (`dtdz`), a Range of node depths `z` (in m), the number of nodes `nz`, and the `penultimate_node`---as well as temperature-dependent diffusion coefficients used in `diffusionadvection`, using the temperature-depth paramterization of [Morin+ 2010](https://doi.org/10.1130/GES00512.1). These are returned as Vectors of length `nz`, where each cell corresponds to a depth node in `z`. The two coefficients are `k1` and `k2`, both of which are follwed with `cl` or `w` to denote Cl⁻ or water, respectively: `k1cl`, `k2cl`, `k1w`, and `k2w`.
 

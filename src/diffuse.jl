@@ -43,12 +43,22 @@ end
 
     diffusionadvection(x,above,below,k1,k2,v,dt,dz)
 
-Calculate the property of a node in a vertical profile given the combined effects of diffusion and advection. Returns the property given initial values for the node `x`, the overlying node `above`, the underlying node `below`, diffusion coefficients `k1` and `k2`, vertical advection velocity `v`, timestep `dt`, and lengthstep `dz`. Alternatively provide the product of `v * dt * dz` for a minor speed-up.
+Calculate the property of a node in a vertical profile given the combined effects of diffusion and advection. Returns the property given initial values for the node `x`, the overlying node `above`, the underlying node `below`, (`dt`/`dz`-scaled) diffusion coefficients `k1` and `k2`, vertical advection velocity `v`, timestep `dt`, and lengthstep `dz`. Alternatively provide the product of `v * dt * dz` for a minor speed-up.
 
 """
 diffusionadvection(x,above,below,k1,k2,v,dt,dz) = x + k1 * (above - 2x + below) + k2 * (above - x) - (v*dt*dz) * (x - above)
 
 diffusionadvection(x,above,below,k1,k2,vdtdz) = x + k1 * (above - 2x + below) + k2 * (above - x) - vdtdz * (x - above)
+
+
+"""
+
+    diffusion(x,above,below,k)
+
+Calculate the property of a node in a vertical profile given the effect of diffusion, alone. Returns the property given initial values for the node `x`, the overlying node `above`, the underlying node `below`, and (`dt`/`dz`²-scaled) diffusion coefficient `k`.
+
+"""
+diffusion(x,above,below,k) = x + k * (above - 2x + below)
 
 
 """
@@ -128,3 +138,28 @@ end
 
 
 
+"""
+
+```julia
+equilibratecolumn!(sc, seawater, basalwater, z, depth)
+```
+
+Calculate an equilibrium linear profile for all SedimentColumn vectors in `sc` between a seafloor `seawater` and `basalwater` composition, given node depths `z` and total column `depth`.
+
+"""
+
+function equilibratecolumn!(sc::SedimentColumn, seawater::Water,basalwater::Water, z::StepRangeLen, depth::Float64)
+
+    mO = (basalwater.O - seawater.O) / depth
+    mCl = (basalwater.Cl - seawater.Cl) / depth
+
+    @inbounds @simd for i = eachindex(z)
+        zi = z[i]
+        zcl = mCl * zi + seawater.Cl
+        sc.Cl.p[i] = sc.Cl.o[i] = zcl
+        sc.O.p[i] =  sc.O.o[i] = mO * zi + seawater.O
+        sc.rho.p[i] = sc.rho.o[i] = density(zcl)
+    end
+    
+    mO,mCl
+end

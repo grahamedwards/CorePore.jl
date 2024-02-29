@@ -47,3 +47,13 @@ diffuseadvectcolumn!(sc,k)
 @test sc.Cl.o[end] ≈ 20.166286404580042
 @test sc.O.o[2] ≈ d18Otest
 @test sc.O.o[end] ≈ -1.025290758205530
+
+
+
+mO, mCl = PorewaterDiffusion.equilibratecolumn!(sc,mcmurdosound(),deepbonney(),k.z,k.depth)
+    @test mO ≈ -0.0121
+    @test mCl ≈   0.04981380833333334
+
+    @test sc.Cl.p[2] == sc.Cl.p[2] ≈ mCl * k.z[2] + mcmurdosound().Cl
+    @test sc.O.p[2] == sc.O.p[2] ≈ mO * k.z[2] + mcmurdosound().O
+    @test density(sc.Cl.p[2]) ≈ sc.rho.o[2] == sc.rho.p[2]

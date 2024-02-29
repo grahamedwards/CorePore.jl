@@ -1,6 +1,7 @@
 @test water(1,2).Cl == water(1.,2.).Cl
 @test mcmurdoshelf().O == -0.33 && mcmurdoshelf().Cl == 19.2657
 @test mcmurdosound().O == -1.0 && mcmurdosound().Cl == 19.81655
+@test 119.44 < deepbonney().Cl < 119.45 && deepbonney().O ==-25.2
 
 @test isnan(CoreData([1,2], [1,1], [1,1], [1., missing], [1,1]).O.mu[2])
 @test CoreData([1,2], [1,1], [1,1], [1., missing], [1,1]).z == [1.0, 2.0]

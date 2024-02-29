@@ -2,7 +2,7 @@ module PorewaterDiffusion
 import DelimitedFiles 
 using Random
 
-export water, mcmurdoshelf, mcmurdosound, CoreData, andrill2a, PorewaterProperty, SedimentColumn, LR04, Constants, Proposal, update, getproposal
+export Water, water, mcmurdoshelf, mcmurdosound, deepbonney, CoreData, andrill2a, PorewaterProperty, SedimentColumn, LR04, Constants, Proposal, update, getproposal
 include("parameters.jl")
 
 export density, diffusionadvection, diffuseadvectcolumn!
