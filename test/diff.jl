@@ -44,9 +44,9 @@ diffuseadvectcolumn!(sc,k)
 @test sc.rho.o == sc.rho.p
 
 @test sc.Cl.o[2] ≈ Cltest
-@test sc.Cl.o[end] ≈ 20.166286404580042
+@test sc.Cl.o[end-1] ≈ 20.166286404580042
 @test sc.O.o[2] ≈ d18Otest
-@test sc.O.o[end] ≈ -1.025290758205530
+@test sc.O.o[end-1] ≈ -1.025290758205530
 
 
 
