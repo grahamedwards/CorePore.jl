@@ -125,9 +125,9 @@ function diffuseadvectcolumn!(sc::SedimentColumn, k::Constants)
     end
 
 # set bottom values to penultimate values
-    sc.O.p[k.nz] = sc.O.p[k.penultimate_node]
-    sc.Cl.p[k.nz] = sc.Cl.p[k.penultimate_node]
-    sc.rho.p[k.nz] = sc.rho.p[k.penultimate_node]
+    #sc.O.p[k.nz] = sc.O.p[k.penultimate_node]
+    #sc.Cl.p[k.nz] = sc.Cl.p[k.penultimate_node]
+    #sc.rho.p[k.nz] = sc.rho.p[k.penultimate_node]
 
 # And time steps forward, replacing o with p.
     sc.O.o .= sc.O.p
