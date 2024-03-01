@@ -19,22 +19,18 @@ end
 Evalute strict constraints on priors that will automatically reject a proposal with...
 - Onset date beyond the climate record timespan (in ka) (`record_max_age`)
 - Nonphysical subglacial thresholds -- melting at lower benthic δ¹⁸O than freezing or values exceeding the record extrema (`climatelimits`).
-- Freezing rate is ≤ 0.4dt/dz (to prevent an error in a log-calculation in [`PorewaterDiffusion.boundaryconditions`](@ref)).
-- Annual melting rate must be no more than that observed at the Thwaites grounding line (<10 m/yr, [Davis+ 2023](https://www.nature.com/articles/s41586-022-05586-0)).
+- Freezing rate is non-zero and ≤ 0.4dt/dz (to prevent an error in a log-calculation in [`PorewaterDiffusion.boundaryconditions`](@ref)).
+- Annual melting rate is non-zero and must be no more than that observed at the Thwaites grounding line (<10 m/yr, [Davis+ 2023](https://www.nature.com/articles/s41586-022-05586-0)).
 
 """
 function strictpriors(p::Proposal, record_max_age::Number, climatelimits::Tuple{Number,Number}, k::Constants)
+    
     x=true
     
-    x &= p.onset <= record_max_age
-    x &= 0 < p.onset
-    
-    x &= p.sea2frz < p.frz2mlt
-    x &= climatelimits[1] < p.sea2frz
-    x &= p.frz2mlt < climatelimits[2]
-
-    x &= p.dfrz <= 0.4k.dz/k.dt
-    x &= p.dmlt <= 10.
+    x &= 0 < p.onset <= record_max_age
+    x &= climatelimits[1] < p.sea2frz < p.frz2mlt < climatelimits[2]
+    x &= 0 < p.dfrz <= 0.4k.dz/k.dt
+    x &= 0 < p.dmlt <= 10.
 
     x
 end
@@ -47,18 +43,16 @@ end
 
 Add a random jump to a randomly selected field of `p` with a corresponding normal jumping distribution defined by the corresponding field in `σ`. The possible fields may be specified by providing a Tuple of Symbols `f`, and a specific RNG seed may be provided.
 
-Note that `:dmlt` and `:dfrz` are drawn from a lognormal jumping distribution (where `σ` is in log-space.)
-
-"""
+"""#Note that `:dmlt` and `:dfrz` are drawn from a lognormal jumping distribution (where `σ` is in log-space.)
 function proposaljump(p::Proposal, j::Proposal; rng::AbstractRNG=Xoshiro(), f::Tuple{Vararg{Symbol}}=fieldnames(Proposal))
 
     jumpname = rand(rng,f)
-    logdist = (jumpname == :dmlt) | (jumpname == :dfrz)
+    #logdist = (jumpname == :dmlt) | (jumpname == :dfrz)
     jump = getproposal(j,jumpname) * randn(rng)
     x = getproposal(p,jumpname)
-    x = ifelse(logdist, log(x),x)
+    #x = ifelse(logdist, log(x),x)
     x += jump
-    x = ifelse(logdist, exp(x),x)
+    #x = ifelse(logdist, exp(x),x)
     (update(p, jumpname, x) , jumpname , abs(jump) )
 end
 

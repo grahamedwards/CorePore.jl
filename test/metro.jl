@@ -12,7 +12,7 @@ spargs = (1000., (1.,4.), Constants())
 
 
 # proposaljump
-@test PorewaterDiffusion.proposaljump(Proposal(ones(5)...), Proposal(ones(5)...), rng=StableRNG(2580))[1].dfrz ≈ 1.0949056480096304
+@test PorewaterDiffusion.proposaljump(Proposal(ones(5)...), Proposal(ones(5)...), rng=StableRNG(2580))[1].dfrz ≈ 1.090668193354693 # if lognormal -> 1.0949056480096304
 
 @test PorewaterDiffusion.proposaljump(Proposal(ones(5)...), Proposal(ones(5)...), rng=StableRNG(10))[1].onset ≈ 0.23064139237391934
 
