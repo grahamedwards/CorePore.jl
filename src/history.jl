@@ -1,7 +1,7 @@
 """
 
 ```julia
-porewaterhistory!(sc::SedimentColumn, p::Proposal, k::Constants, climhist::NamedTuple, seawater::Water, basalwater::Water ka_dt::Int)
+porewaterhistory!(sc::SedimentColumn, p::Proposal, k::Constants, climhist::NamedTuple, seawater::Water, ka_dt::Int)
 ```
 
 In-place version of [`porewaterhistory`](@ref), which takes every input as an arg (rather than some defaults as kwargs). It also requires you to provide `ka_dt` -- the number of diffusion timesteps in each thousand-year climate timestep.
@@ -9,10 +9,10 @@ In-place version of [`porewaterhistory`](@ref), which takes every input as an ar
 see also: [`porewaterhistory`](@ref)
 
 """
-function porewaterhistory!(sc::SedimentColumn, p::Proposal, k::Constants, climhist::ClimateHistory, sw::Water, bw::Water, ka_dt::Int)
+function porewaterhistory!(sc::SedimentColumn, p::Proposal, k::Constants, climhist::ClimateHistory, sw::Water, ka_dt::Int)
     #sc.Cl.p .= sc.Cl.o .= sw.Cl
     #sc.O.p .= sc.O.o .= sw.O
-    equilibratecolumn!(sc,sw,bw,k.z,k.depth)
+    equilibratecolumn!(sc,sw,water(p.basalCl,p.basalO),k.z,k.depth)
 
     isd = searchsortedfirst(climhist.t, p.onset, rev=true)
     #isd = ifelse(isd<climhist.n, isd, climhist.n)
@@ -37,7 +37,7 @@ end
 """
 
 ```julia
-porewaterhistory(proposals [; k=Constants(), climatehistory=LR04(), seawater=mcmurdosound(), basalwater=deepbonney()])
+porewaterhistory(proposals [; k=Constants(), climatehistory=LR04(), seawater=mcmurdosound()])
 ```
 
 Calculate the porewater advection-diffusion history of chlorinity and O-isotope-traced water in a sediment column described by properties in `k` (::[`Constants`](@ref)) over a given [`ClimateHistory`](@ref) ([`LR04`](@ref) by default) and coretop `seawater` compositions.
@@ -49,10 +49,10 @@ See [`diffuseadvectcolumn!`](@ref) for the underlying diffusion-advection transp
 see also: [`porewaterhistory!`](@ref), [`Proposal`](@ref), [`Constants`](@ref), [`LR04`](@ref), [`water`](@ref)
 
 """
-function porewaterhistory(p::Proposal; k::Constants=Constants(), climatehistory::ClimateHistory=LR04(), seawater::Water=mcmurdosound(), basalwater::Water=deepbonney())
+function porewaterhistory(p::Proposal; k::Constants=Constants(), climatehistory::ClimateHistory=LR04(), seawater::Water=mcmurdosound())
 
     sc = SedimentColumn(k.nz,seawater...)
-    porewaterhistory!(sc, p, k, climatehistory, seawater, basalwater, dt_climatetimestep(climatehistory.t,k.dt))
+    porewaterhistory!(sc, p, k, climatehistory, seawater, dt_climatetimestep(climatehistory.t,k.dt))
 
     (; Cl = sc.Cl.p, d18O = sc.O.p)
 end

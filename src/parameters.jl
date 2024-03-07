@@ -334,6 +334,8 @@ struct Proposal
     dmlt::Float64
     sea2frz::Float64
     frz2mlt::Float64
+    basalCl::Float64
+    basalO::Float64
 end
 
 
@@ -348,13 +350,15 @@ function update(x::Proposal, f::Symbol,v::Number)
     @assert f ∈ fieldnames(Proposal)
     v = float(v)
     
-    o = ifelse(f==:onset, v, x.onset)
-    df = ifelse(f==:dfrz, v, x.dfrz)
-    dm = ifelse(f==:dmlt, v, x.dmlt)
-    s = ifelse(f==:sea2frz, v, x.sea2frz)
-    f = ifelse(f==:frz2mlt, v, x.frz2mlt)
-    
-    Proposal(o,df,dm,s,f)
+    Proposal(
+            ifelse(f==:onset, v, x.onset),
+            ifelse(f==:dfrz, v, x.dfrz),
+            ifelse(f==:dmlt, v, x.dmlt),
+            ifelse(f==:sea2frz, v, x.sea2frz),
+            ifelse(f==:frz2mlt, v, x.frz2mlt),
+            ifelse(f==:basalCl, v, x.basalCl),
+            ifelse(f==:basalO, v, x.basalO)
+    )
 end
 
 
@@ -376,5 +380,7 @@ function getproposal(x::Proposal, f::Symbol)
     y = ifelse(f==:dmlt, x.dmlt, y)
     y = ifelse(f==:sea2frz, x.sea2frz, y)
     y = ifelse(f==:frz2mlt, x.frz2mlt, y)
+    y = ifelse(f==:basalCl, x.basalCl, y)
+    y = ifelse(f==:basalO, x.basalO, y)
     y
 end

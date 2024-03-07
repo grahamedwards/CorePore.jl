@@ -65,7 +65,7 @@ porewatermetropolis...
 ```
 Not tested, yet...
 """
-function porewatermetropolis(p::Proposal, jumpsigma::Proposal, prior::CoreData; burnin::Int=0, chainsteps::Int=100, k::Constants=Constants(), seawater::Water=mcmurdosound(), basalwater::Water=deepbonney(), explore::Tuple{Vararg{Symbol}}=fieldnames(Proposal), climate::ClimateHistory=LR04(), rng::AbstractRNG=Random.Xoshiro())
+function porewatermetropolis(p::Proposal, jumpsigma::Proposal, prior::CoreData; burnin::Int=0, chainsteps::Int=100, k::Constants=Constants(), seawater::Water=mcmurdosound(), explore::Tuple{Vararg{Symbol}}=fieldnames(Proposal), climate::ClimateHistory=LR04(), rng::AbstractRNG=Random.Xoshiro())
 
     scalejump=2.4
 
@@ -81,7 +81,7 @@ function porewatermetropolis(p::Proposal, jumpsigma::Proposal, prior::CoreData; 
     sc = SedimentColumn(k.nz,seawater...)
     ka_dt = PorewaterDiffusion.dt_climatetimestep(climate.t,k.dt)
     
-    porewaterhistory!(sc, ϕ, k, climate, seawater, basalwater, ka_dt)
+    porewaterhistory!(sc, ϕ, k, climate, seawater, ka_dt)
     
     llCl, llO = loglikelihood(prior.z,prior.Cl.mu,prior.Cl.sig,k.z,sc.Cl.p), loglikelihood(prior.z,prior.O.mu,prior.O.sig,k.z,sc.O.p)
     ll = llCl + llO
@@ -99,7 +99,7 @@ function porewatermetropolis(p::Proposal, jumpsigma::Proposal, prior::CoreData; 
         ϕ, jumpname, jump = proposaljump(p, jumpsigma, f=explore, rng=rng)
         if strictpriors(ϕ, record_max_age, climate_limits, k)
 
-            porewaterhistory!(sc, ϕ, k, climate, seawater, basalwater, ka_dt)
+            porewaterhistory!(sc, ϕ, k, climate, seawater, ka_dt)
 
             llCl, llO = loglikelihood(prior.z,prior.Cl.mu,prior.Cl.sig,k.z,sc.Cl.p), loglikelihood(prior.z,prior.O.mu,prior.O.sig,k.z,sc.O.p)
             llϕ = llCl + llO
@@ -129,7 +129,7 @@ function porewatermetropolis(p::Proposal, jumpsigma::Proposal, prior::CoreData; 
         ϕ, jumpname, jump = proposaljump(p, jumpsigma, f=explore, rng=rng)
         if strictpriors(ϕ, record_max_age, climate_limits, k)
 
-            porewaterhistory!(sc, ϕ, k, climate, seawater, basalwater, ka_dt)
+            porewaterhistory!(sc, ϕ, k, climate, seawater, ka_dt)
 
             llCl, llO = loglikelihood(prior.z,prior.Cl.mu,prior.Cl.sig,k.z,sc.Cl.p), loglikelihood(prior.z,prior.O.mu,prior.O.sig,k.z,sc.O.p)
             llϕ = llCl + llO
