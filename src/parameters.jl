@@ -320,6 +320,16 @@ end
 
 see also: [`proposal`](@ref)
 
+"""
+const Proposal = @NamedTuple{onset::Float64, dfrz::Float64, dmlt::Float64, sea2frz::Float64, frz2mlt::Float64, flr::Float64, basalCl::Float64, basalO::Float64}
+
+
+"""
+
+    proposal(onset, dfrz, dmlt, sea2frz, frz2mlt, flr, basalCl, basalO)
+
+Returns a NamedTuple (special DataType [`SolarChem.Proposal`](@ref)) with proposal parameters. All inputs must be of type Number (converts to Float64).
+
 ---
 
 | field | description | units |
@@ -330,13 +340,10 @@ see also: [`proposal`](@ref)
 | `sea2frz` | Benthic δ¹⁸O threshold for subglacial freezing | ‰ |
 | `frz2mlt` | Benthic δ¹⁸O threshold for subglacial melting | ‰ |
 | `flr` | depth of diffusion-dominated porewater column | m |
-| `basalCl` | 
+| `basalCl` | chloridity at base of diffusion-dominated column | g/kg |
+| `basalO` | δ¹⁸O at base of diffusion-dominated column | g/kg
 
 """
-const Proposal = @NamedTuple{onset::Float64, dfrz::Float64, dmlt::Float64, sea2frz::Float64, frz2mlt::Float64, flr::Float64, basalCl::Float64, basalO::Float64}
-
-
-
 proposal(o::Number, df::Number, dm::Number, s2f::Number, f2m::Number, f::Number, bcl::Number, bo::Number) = (; onset=float(o), dfrz=float(df), dmlt=float(dm), sea2frz = float(s2f), frz2mlt=float(f2m), flr=float(f), basalCl=float(bcl), basalO=float(bo))
 
 const proposals = keys(proposal(ones(8)...))
