@@ -21,6 +21,7 @@ Evalute strict constraints on priors that will automatically reject a proposal w
 - Nonphysical subglacial thresholds -- melting at lower benthic δ¹⁸O than freezing or values exceeding the record extrema (`climatelimits`).
 - Freezing rate is non-zero and ≤ 0.4dt/dz (to prevent an error in a log-calculation in [`PorewaterDiffusion.boundaryconditions`](@ref)).
 - Annual melting rate is non-zero and must be no more than that observed at the Thwaites grounding line (<10 m/yr, [Davis+ 2023](https://www.nature.com/articles/s41586-022-05586-0)).
+- Diffusive porewater column (`p.flr`) extends no deeper than 2 km.
 
 """
 function strictpriors(p::Proposal, record_max_age::Number, climatelimits::Tuple{Number,Number}, k::Constants)
@@ -31,6 +32,7 @@ function strictpriors(p::Proposal, record_max_age::Number, climatelimits::Tuple{
     x &= climatelimits[1] < p.sea2frz < p.frz2mlt < climatelimits[2]
     x &= 0 < p.dfrz <= 0.4k.dz/k.dt
     x &= 0 < p.dmlt <= 10.
+    x &= p.flr <= 2000.
 
     x
 end
@@ -39,17 +41,17 @@ end
 
 """
 
-    PorewaterDiffusion.proposaljump(p::Proposal, σ::Proposal; f=fieldnames(Proposal), rng::AbstractRNG)
+    PorewaterDiffusion.proposaljump(p::Proposal, σ::Proposal; f=proposals, rng::AbstractRNG)
 
 Add a random jump to a randomly selected field of `p` with a corresponding normal jumping distribution defined by the corresponding field in `σ`. The possible fields may be specified by providing a Tuple of Symbols `f`, and a specific RNG seed may be provided.
 
 """#Note that `:dmlt` and `:dfrz` are drawn from a lognormal jumping distribution (where `σ` is in log-space.)
-function proposaljump(p::Proposal, j::Proposal; rng::AbstractRNG=Xoshiro(), f::Tuple{Vararg{Symbol}}=fieldnames(Proposal))
+function proposaljump(p::Proposal, j::Proposal; rng::AbstractRNG=Xoshiro(), f::Tuple{Vararg{Symbol}}=proposals)
 
     jumpname = rand(rng,f)
     #logdist = (jumpname == :dmlt) | (jumpname == :dfrz)
-    jump = getproposal(j,jumpname) * randn(rng)
-    x = getproposal(p,jumpname)
+    jump = j[jumpname] * randn(rng)
+    x = p[jumpname]
     #x = ifelse(logdist, log(x),x)
     x += jump
     #x = ifelse(logdist, exp(x),x)
@@ -65,7 +67,7 @@ porewatermetropolis...
 ```
 Not tested, yet...
 """
-function porewatermetropolis(p::Proposal, jumpsigma::Proposal, prior::CoreData; burnin::Int=0, chainsteps::Int=100, k::Constants=Constants(), seawater::Water=mcmurdosound(), explore::Tuple{Vararg{Symbol}}=fieldnames(Proposal), climate::ClimateHistory=LR04(), rng::AbstractRNG=Random.Xoshiro())
+function porewatermetropolis(p::Proposal, jumpsigma::Proposal, prior::CoreData; burnin::Int=0, chainsteps::Int=100, k::Constants=Constants(), seawater::Water=mcmurdosound(), explore::Tuple{Vararg{Symbol}}=proposals, climate::ClimateHistory=LR04(), rng::AbstractRNG=Random.Xoshiro())
 
     scalejump=2.4
 
@@ -74,7 +76,7 @@ function porewatermetropolis(p::Proposal, jumpsigma::Proposal, prior::CoreData; 
 
     ϕ = p # make a new proposal from the original.
 
-    chains = Matrix{Float64}(undef, length(fieldnames(Proposal)), chainsteps)
+    chains = Matrix{Float64}(undef, length(explore), chainsteps)
     lldist = Vector{Float64}(undef, chainsteps)
     acceptance = falses(chainsteps)
 
@@ -145,7 +147,7 @@ function porewatermetropolis(p::Proposal, jumpsigma::Proposal, prior::CoreData; 
         end
         
 
-        chains[:,i] .= p.onset, p.dfrz, p.dmlt, p.sea2frz, p.frz2mlt
+        chains[:,i] .= (p...,)
         lldist[i] = ll
 
         if iszero(i % chainupdate) # Update progress 
@@ -154,7 +156,7 @@ function porewatermetropolis(p::Proposal, jumpsigma::Proposal, prior::CoreData; 
         end
 
     end
-    outnames = (fieldnames(Proposal)...,:ll, :accept)
+    outnames = (explore...,:ll, :accept)
     outvalues = ((chains[i,:] for i in axes(chains,1))..., lldist, acceptance)
     NamedTuple{outnames}(outvalues)
 end

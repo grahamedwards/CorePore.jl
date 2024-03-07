@@ -315,9 +315,12 @@ end
 
 """
 
-    Proposals(onset, dfrz, dmlt, sea2frz, frz2mlt)
+    Proposal
+`DataType` declared as a shorthand for `@NamedTuple(onset::Float64, dfrz::Float64, dmlt::Float64, sea2frz::Float64, frz2mlt::Float64, flr::Float64, basalCl::Float64, basalO::Float64)` because Graham likes the splatting and name-indexing functionality of NamedTuples and structs don't have them!
 
-Immutable struct to hold proposed parameters. 
+see also: [`proposal`](@ref)
+
+---
 
 | field | description | units |
 | :---- | :---------- | :----
@@ -326,36 +329,35 @@ Immutable struct to hold proposed parameters.
 | `dmlt`| melting rate | m/yr |
 | `sea2frz` | Benthic δ¹⁸O threshold for subglacial freezing | ‰ |
 | `frz2mlt` | Benthic δ¹⁸O threshold for subglacial melting | ‰ |
+| `flr` | depth of diffusion-dominated porewater column | m |
+| `basalCl` | 
 
 """
-struct Proposal
-    onset::Float64
-    dfrz::Float64
-    dmlt::Float64
-    sea2frz::Float64
-    frz2mlt::Float64
-    basalCl::Float64
-    basalO::Float64
-end
+const Proposal = @NamedTuple{onset::Float64, dfrz::Float64, dmlt::Float64, sea2frz::Float64, frz2mlt::Float64, flr::Float64, basalCl::Float64, basalO::Float64}
 
+
+
+proposal(o::Number, df::Number, dm::Number, s2f::Number, f2m::Number, f::Number, bcl::Number, bo::Number) = (; onset=float(o), dfrz=float(df), dmlt=float(dm), sea2frz = float(s2f), frz2mlt=float(f2m), flr=float(f), basalCl=float(bcl), basalO=float(bo))
+
+const proposals = keys(proposal(ones(8)...))
 
 """
-    update(p, f, x::Number)
+    update(p::Proposal, f::Symbol, x::Number)
 
 Update field `f` of [`Proposal`](@ref) instance `p` with value `x`.
 
 """
 function update(x::Proposal, f::Symbol,v::Number)
-
-    @assert f ∈ fieldnames(Proposal)
+    @assert f ∈ proposals
     v = float(v)
     
-    Proposal(
+    proposal(
             ifelse(f==:onset, v, x.onset),
             ifelse(f==:dfrz, v, x.dfrz),
             ifelse(f==:dmlt, v, x.dmlt),
             ifelse(f==:sea2frz, v, x.sea2frz),
             ifelse(f==:frz2mlt, v, x.frz2mlt),
+            ifelse(f==:flr, v, x.flr),
             ifelse(f==:basalCl, v, x.basalCl),
             ifelse(f==:basalO, v, x.basalO)
     )
@@ -366,21 +368,9 @@ end
 
 
 """
-    getproposal(p, s)
+    getproposal(p::Proposal, s::Symbol)
 
 Returns the value corresponding to the field of Symbol `s` in [`Proposal`](@ref) instance `p`. Use in lieu of `getproperty` to avoid allocations. 
 
 """
-function getproposal(x::Proposal, f::Symbol)
-    @assert f ∈ fieldnames(Proposal)
-
-    y=0.
-    y = ifelse(f==:onset, x.onset,y)
-    y = ifelse(f==:dfrz, x.dfrz, y)
-    y = ifelse(f==:dmlt, x.dmlt, y)
-    y = ifelse(f==:sea2frz, x.sea2frz, y)
-    y = ifelse(f==:frz2mlt, x.frz2mlt, y)
-    y = ifelse(f==:basalCl, x.basalCl, y)
-    y = ifelse(f==:basalO, x.basalO, y)
-    y
-end
+getproposal(x::Proposal, f::Symbol) = x[f]
