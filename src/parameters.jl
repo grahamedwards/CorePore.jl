@@ -328,7 +328,7 @@ const Proposal = @NamedTuple{onset::Float64, dfrz::Float64, dmlt::Float64, sea2f
 
     proposal(onset, dfrz, dmlt, sea2frz, frz2mlt, flr, basalCl, basalO)
 
-Returns a NamedTuple (special DataType [`SolarChem.Proposal`](@ref)) with proposal parameters. All inputs must be of type Number (converts to Float64).
+Returns a NamedTuple (special DataType [`PorewaterDiffusion.Proposal`](@ref)) with proposal parameters. All inputs must be of type Number (converts to Float64).
 
 ---
 
