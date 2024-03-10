@@ -37,7 +37,7 @@ d18Otest = diffusionadvection(sc.O.o[2], sc.O.o[1], sc.O.o[3], k.k1w[2], k.k2w[2
 @test Cltest ≈ 19.970844957241017
 @test d18Otest ≈ -1.0082012433725027
 
-diffuseadvectcolumn!(sc,k, k.depth)
+diffuseadvectcolumn!(sc,k, k.depth+100) # test floor overshoot correction
 
 @test sc.Cl.o == sc.Cl.p
 @test sc.O.o == sc.O.p
@@ -45,8 +45,6 @@ diffuseadvectcolumn!(sc,k, k.depth)
 
 @test sc.Cl.o[2] ≈ Cltest 
 @test sc.O.o[2] ≈ d18Otest
-
-
 
 
 mO, mCl = PorewaterDiffusion.equilibratecolumn!(sc,mcmurdosound(),deepbonney(),k.z,k.depth/2)

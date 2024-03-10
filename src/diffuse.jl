@@ -108,8 +108,8 @@ see also: [`SedimentColumn`](@ref), [`Constants`](@ref)
 function diffuseadvectcolumn!(sc::SedimentColumn, k::Constants, flr::Float64)
 
     iflr = round(Int, flr / k.dz + 1)
+    iflr = ifelse(iflr >= k.nz, k.penultimate_node, iflr) # make sure iflr is no deeper than the penultimate node. 
     iflr -= ifelse(k.z[iflr] > flr, 1,0)
-    iflr = ifelse(iflr >= k.nz, k.penultimate_node, iflr)
 
     sc.Cl.p[1] = sc.Cl.o[1]
     sc.O.p[1] = sc.O.o[1]
