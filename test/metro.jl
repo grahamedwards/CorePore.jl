@@ -10,6 +10,7 @@ spargs = (1000., (1.,4.), Constants())
 @test !PorewaterDiffusion.strictpriors(proposal(500,.3,1,2,3,1,1,1), spargs...) # p.dfrz too high.
 @test !PorewaterDiffusion.strictpriors(proposal(500,.1,20.,2,3,1,1,1), spargs...) # p.dfrz too high.
 @test !PorewaterDiffusion.strictpriors(proposal(500,.1,1,2,3,2001,1,1), spargs...) # p.flr too deep
+@test !PorewaterDiffusion.strictpriors(proposal(500,.1,1,2,3,0,1,1), spargs...) # p.flr too deep
 
 # proposaljump
 @test PorewaterDiffusion.proposaljump(proposal(ones(8)...), proposal(ones(8)...), rng=StableRNG(2580))[1].dfrz ≈ 1.090668193354693 # if lognormal -> 1.0949056480096304

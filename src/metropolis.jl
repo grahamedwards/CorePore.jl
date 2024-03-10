@@ -21,7 +21,7 @@ Evalute strict constraints on priors that will automatically reject a proposal w
 - Nonphysical subglacial thresholds -- melting at lower benthic δ¹⁸O than freezing or values exceeding the record extrema (`climatelimits`).
 - Freezing rate is non-zero and ≤ 0.4dt/dz (to prevent an error in a log-calculation in [`PorewaterDiffusion.boundaryconditions`](@ref)).
 - Annual melting rate is non-zero and must be no more than that observed at the Thwaites grounding line (<10 m/yr, [Davis+ 2023](https://www.nature.com/articles/s41586-022-05586-0)).
-- Diffusive porewater column (`p.flr`) extends no deeper than 2 km.
+- Diffusive porewater column (`p.flr`) is between 0 and 2 km depth.
 
 """
 function strictpriors(p::Proposal, record_max_age::Number, climatelimits::Tuple{Number,Number}, k::Constants)
@@ -32,7 +32,7 @@ function strictpriors(p::Proposal, record_max_age::Number, climatelimits::Tuple{
     x &= climatelimits[1] < p.sea2frz < p.frz2mlt < climatelimits[2]
     x &= 0 < p.dfrz <= 0.4k.dz/k.dt
     x &= 0 < p.dmlt <= 10.
-    x &= p.flr <= 2000.
+    x &= 0 < p.flr <= 2000.
 
     x
 end
