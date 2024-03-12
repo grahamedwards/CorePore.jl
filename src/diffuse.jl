@@ -19,12 +19,12 @@ function boundaryconditions(Cl::Float64, d18O::Float64, x, sea2freeze, freeze2me
     if x < sea2freeze # low δ18O -> warm -> seawater
         Cl, d18O = Clsw, d18Osw
 
-    elseif x >= freeze2melt # high δ18O -> cold -> warm-based
+    elseif x > freeze2melt # high δ18O -> cold -> warm-based
         ϕdz = 0.4dz
         melt = meltrate * dt
         
         Cl *= ϕdz / (ϕdz + melt)
-        d18O = (d18O * ϕdz - 40 * melt) / (ϕdz+melt)
+        d18O = (d18O * ϕdz - 40melt) / (ϕdz+melt)
     
     else # mid δ18O -> mid temps -> cold-based
         ϕdz = 0.4dz # scaled for porosity
@@ -146,7 +146,6 @@ equilibratecolumn!(sc, seawater, basalwater, z, flr)
 Calculate an equilibrium linear profile for all SedimentColumn vectors in `sc` between a seafloor `seawater` and `basalwater` composition, given node depths `z` and diffusion-dominated column depth `flr`.
 
 """
-
 function equilibratecolumn!(sc::SedimentColumn, seawater::Water,basalwater::Water, z::StepRangeLen, flr::Float64)
 
     mO = (basalwater.O - seawater.O) / flr
