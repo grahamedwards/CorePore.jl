@@ -28,7 +28,7 @@ function boundaryconditions(Cl::Float64, d18O::Float64, x, sea2freeze, freeze2me
     
     else # mid δ18O -> mid temps -> cold-based
         ϕdz = 0.4dz # scaled for porosity
-        frz = freezerate*dt
+        frz = freezerate * dt
     
         Cl *= ϕdz / (ϕdz - frz) 
         d18O +=  1.59 * log(1 - (frz / ϕdz)) # simplified from eqn 2 of Toyota et al. (2017)
