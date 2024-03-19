@@ -45,16 +45,18 @@ end
 
 Add a random jump to a randomly selected field of `p` with a corresponding normal jumping distribution defined by the corresponding field in `σ`. The possible fields may be specified by providing a Tuple of Symbols `f`, and a specific RNG seed may be provided.
 
-"""#Note that `:dmlt` and `:dfrz` are drawn from a lognormal jumping distribution (where `σ` is in log-space.)
+Note that `:dmlt`, `:dfrz`, and `:basalCl` are drawn from a lognormal jumping distribution (where `σ` is in log-space.)
+
+"""
 function proposaljump(p::Proposal, j::Proposal; rng::AbstractRNG=Xoshiro(), f::Tuple{Vararg{Symbol}}=proposals)
 
     jumpname = rand(rng,f)
-    #logdist = (jumpname == :dmlt) | (jumpname == :dfrz)
+    logdist = jumpname ∈ (:dmlt, :dfrz, :basalCl)
     jump = j[jumpname] * randn(rng)
     x = p[jumpname]
-    #x = ifelse(logdist, log(x),x)
+    x = logdist ? log(x) : x
     x += jump
-    #x = ifelse(logdist, exp(x),x)
+    x = ifelse(logdist, exp(x),x)
     (update(p, jumpname, x) , jumpname , abs(jump) )
 end
 
