@@ -14,17 +14,19 @@ end
 
 """
 
-    PorewaterDiffusion.strictpriors(p::Proposal, record_max_age::Number, climatelimits::Tuple{Number,Number}, k::Constants)
+    PorewaterDiffusion.strictpriors(p::Proposal, record_max_age::Number, climatelimits::Tuple{Number,Number}, depth::Number)
 
 Evalute strict constraints on priors that will automatically reject a proposal with...
 - Onset date beyond the climate record timespan (in ka) (`record_max_age`)
 - Nonphysical subglacial thresholds -- melting at lower benthic δ¹⁸O than freezing or values exceeding the record extrema (`climatelimits`).
 - Freezing rate is non-zero and less than the upperbound of observed freezing rates (0.002 m/yr)
 - Annual melting rate is non-zero and must be no more than that observed at the Thwaites grounding line (<10 m/yr, [Davis+ 2023](https://www.nature.com/articles/s41586-022-05586-0)).
-- Diffusive porewater column (`p.flr`) is between 0 and 2 km depth.
+- Diffusive porewater column (`p.flr`) is between 0 and the model sediment column `depth`.
+- Basal [Cl⁻] compositions < 0 g/kg or in excess of 200 g/kg (the water+halite peritectic is ~163 g/kg Cl, assuming charge balance with NaCl)
+-  δ¹⁸O compositions less than dome-like values (~ -56 ‰)
 
 """
-function strictpriors(p::Proposal, record_max_age::Number, climatelimits::Tuple{Number,Number}, k::Constants)
+function strictpriors(p::Proposal, record_max_age::Number, climatelimits::Tuple{Number,Number}, depth::Number)
     
     x=true
     
@@ -32,7 +34,9 @@ function strictpriors(p::Proposal, record_max_age::Number, climatelimits::Tuple{
     x &= climatelimits[1] < p.sea2frz < p.frz2mlt < climatelimits[2]
     x &= 0 < p.dfrz <= 0.002 # ≤ 0.4dt/dz to prevent an error in a log-calculation in `PorewaterDiffusion.boundaryconditions`
     x &= 0 < p.dmlt <= 10.
-    x &= 0 < p.flr <= 2000.
+    x &= 0 < p.flr <= depth
+    x &= 0 < p.basalCl <= 200
+    x &= -56 < p.basalO
 
     x
 end
@@ -101,7 +105,7 @@ function porewatermetropolis(p::Proposal, jumpsigma::Proposal, prior::CoreData; 
 
 
         ϕ, jumpname, jump = proposaljump(p, jumpsigma, f=explore, rng=rng)
-        if strictpriors(ϕ, record_max_age, climate_limits, k)
+        if strictpriors(ϕ, record_max_age, climate_limits, k.depth)
 
             porewaterhistory!(sc, ϕ, k, climate, seawater, ka_dt)
 
@@ -131,7 +135,7 @@ function porewatermetropolis(p::Proposal, jumpsigma::Proposal, prior::CoreData; 
     @inbounds for i = 1:chainsteps
 
         ϕ, jumpname, jump = proposaljump(p, jumpsigma, f=explore, rng=rng)
-        if strictpriors(ϕ, record_max_age, climate_limits, k)
+        if strictpriors(ϕ, record_max_age, climate_limits, k.depth)
 
             porewaterhistory!(sc, ϕ, k, climate, seawater, ka_dt)
 
