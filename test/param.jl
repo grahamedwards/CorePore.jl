@@ -13,6 +13,10 @@
 @test andrill2a().Cl.mu[1] ≈ 23.1843
 @test isnan( last( andrill2a().O.mu ) )
 
+@test andrill1b().z[1] ≈ 9.95
+@test andrill1b().Cl.mu[1] ≈ 16.845537420070002
+@test isnan( last( andrill1b().O.mu ) )
+
 @test length(PorewaterProperty(4).p) == 4
 @test PorewaterProperty(2,1).o == PorewaterProperty([1.,1.],[1.,1.]).o
 
