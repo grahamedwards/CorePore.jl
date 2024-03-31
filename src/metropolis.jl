@@ -82,7 +82,7 @@ function porewatermetropolis(p::Proposal, jumpsigma::Proposal, prior::CoreData; 
 
     ϕ = p # make a new proposal from the original.
 
-    chains = Matrix{Float64}(undef, length(explore), chainsteps)
+    chains = Matrix{Float64}(undef, length(proposals), chainsteps)
     lldist = Vector{Float64}(undef, chainsteps)
     acceptance = falses(chainsteps)
 
