@@ -162,7 +162,7 @@ function porewatermetropolis(p::Proposal, jumpsigma::Proposal, prior::CoreData; 
         end
 
     end
-    outnames = (explore...,:ll, :accept)
+    outnames = (proposals..., :ll, :accept)
     outvalues = ((chains[i,:] for i in axes(chains,1))..., lldist, acceptance)
     NamedTuple{outnames}(outvalues)
 end
