@@ -46,7 +46,7 @@ Calculate the porewater advection-diffusion history of chlorinity and O-isotope-
 
 See [`diffuseadvectcolumn!`](@ref) for the underlying diffusion-advection transport calculations.
 
-see also: [`porewaterhistory!`](@ref), [`Proposal`](@ref), [`Constants`](@ref), [`LR04`](@ref), [`water`](@ref)
+see also: [`porewaterhistory!`](@ref), [`Proposal`](@ref), [`Constants`](@ref), [`LR04`](@ref), [`Water`](@ref)
 
 """
 function porewaterhistory(p::Proposal; k::Constants=Constants(), climatehistory::ClimateHistory=LR04(), seawater::Water=mcmurdosound())
