@@ -316,37 +316,47 @@ end
 """
 
     Proposal
-`DataType` declared as a shorthand for `@NamedTuple(onset::Float64, dfrz::Float64, dmlt::Float64, sea2frz::Float64, frz2mlt::Float64, flr::Float64, basalCl::Float64, basalO::Float64)` because Graham likes the splatting and name-indexing functionality of NamedTuples and structs don't have them!
 
-see also: [`proposal`](@ref)
+Struct containing porewater parameters (described below). All inputs must be of type Number (converts to Float64). Built-in functionality includes splatting (`...`) and [`PorewaterDiffusion.fastsplat`](@ref).
 
-"""
-const Proposal = @NamedTuple{onset::Float64, dfrz::Float64, dmlt::Float64, sea2frz::Float64, frz2mlt::Float64, flr::Float64, basalCl::Float64, basalO::Float64}
+| field | description | units | default |
+| :---- | :---------- | :---- | :------ |
+|`onset`| onset of model | ka | 5320 |
+| `dfrz`| freezing rate | m/yr | 0.0001 | 
+| `dmlt`| melting rate | m/yr | 0.001 |
+| `sea2frz` | Benthic δ¹⁸O threshold for subglacial freezing | ‰ | 3.5 |
+| `frz2mlt` | Benthic δ¹⁸O threshold for subglacial melting | ‰ | 4.2 |
+| `flr` | depth of diffusion-dominated porewater column | m | 1000. |
+| `basalCl` | chloridity at base of diffusion-dominated column | g/kg | 119.4 |
+| `basalO` | δ¹⁸O at base of diffusion-dominated column | g/kg | -25.2 |
 
-
-"""
-
-    proposal(onset, dfrz, dmlt, sea2frz, frz2mlt, flr, basalCl, basalO)
-
-Returns a NamedTuple (special DataType [`PorewaterDiffusion.Proposal`](@ref)) with proposal parameters. All inputs must be of type Number (converts to Float64).
-
----
-
-| field | description | units |
-| :---- | :---------- | :----
-|`onset`| onset of model | ka |
-| `dfrz`| freezing rate | m/yr |
-| `dmlt`| melting rate | m/yr |
-| `sea2frz` | Benthic δ¹⁸O threshold for subglacial freezing | ‰ |
-| `frz2mlt` | Benthic δ¹⁸O threshold for subglacial melting | ‰ |
-| `flr` | depth of diffusion-dominated porewater column | m |
-| `basalCl` | chloridity at base of diffusion-dominated column | g/kg |
-| `basalO` | δ¹⁸O at base of diffusion-dominated column | g/kg
+see also: [`update`](@ref)
 
 """
-proposal(o::Number, df::Number, dm::Number, s2f::Number, f2m::Number, f::Number, bcl::Number, bo::Number) = (; onset=float(o), dfrz=float(df), dmlt=float(dm), sea2frz = float(s2f), frz2mlt=float(f2m), flr=float(f), basalCl=float(bcl), basalO=float(bo))
+@kwdef struct Proposal
+    onset::Float64 = 5320.
+    dfrz::Float64 = 1e-4
+    dmlt::Float64 = 1e-3
+    sea2frz::Float64 = 3.5
+    frz2mlt::Float64 = 4.2
+    flr::Float64 = 1000.
+    basalCl::Float64 = 119.4
+    basalO::Float64 = -25.2
+end
 
-const proposals = keys(proposal(ones(8)...))
+# Add splatting functionality for Proposal
+function Base.iterate(@nospecialize(x::Proposal),i::Int=1)
+    y = ifelse(i==1, x.onset, nothing)
+    y = ifelse(i==2, x.dfrz, y)
+    y = ifelse(i==3, x.dmlt, y)
+    y = ifelse(i==4, x.sea2frz, y)
+    y = ifelse(i==5, x.frz2mlt, y)
+    y = ifelse(i==6, x.flr, y)
+    y = ifelse(i==7, x.basalCl, y)
+    y = ifelse(i==8, x.basalO, y)
+    ifelse(isnothing(y), nothing, (y,i+1))
+end
+
 
 """
     update(p::Proposal, f::Symbol, x::Number)
@@ -355,10 +365,10 @@ Update field `f` of [`Proposal`](@ref) instance `p` with value `x`.
 
 """
 function update(x::Proposal, f::Symbol,v::Number)
-    @assert f ∈ proposals
+    @assert f ∈ fieldnames(Proposal)
     v = float(v)
     
-    proposal(
+    Proposal(
             ifelse(f==:onset, v, x.onset),
             ifelse(f==:dfrz, v, x.dfrz),
             ifelse(f==:dmlt, v, x.dmlt),
@@ -370,14 +380,9 @@ function update(x::Proposal, f::Symbol,v::Number)
     )
 end
 
-
-
-
-
 """
-    getproposal(p::Proposal, s::Symbol)
+    fastsplat(x)
 
-Returns the value corresponding to the field of Symbol `s` in [`Proposal`](@ref) instance `p`. Use in lieu of `getproperty` to avoid allocations. 
-
+Returns a tuple of the contents of `x`. Avoids type inherent instability of `Base.iterate` for fast splatting.
 """
-getproposal(x::Proposal, f::Symbol) = x[f]
+fastsplat(x::Proposal) = (x.onset, x.dfrz, x.dmlt, x.sea2frz, x.frz2mlt, x.flr, x.basalCl, x.basalO)

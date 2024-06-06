@@ -45,19 +45,19 @@ end
 
 """
 
-    PorewaterDiffusion.proposaljump(p::Proposal, σ::Proposal; f=proposals, rng::AbstractRNG)
+    PorewaterDiffusion.proposaljump(p::Proposal, σ::Proposal; f, rng::AbstractRNG)
 
-Add a random jump to a randomly selected field of `p` with a corresponding normal jumping distribution defined by the corresponding field in `σ`. The possible fields may be specified by providing a Tuple of Symbols `f`, and a specific RNG seed may be provided.
+Add a random jump to a randomly selected field of `p` with a corresponding normal jumping distribution defined by the corresponding field in `σ`. The possible fields may be specified by providing a Tuple of Symbols `f` (default=`fieldnames(Proposal)`), and a specific RNG seed may be provided.
 
 Note that `:dmlt`, `:dfrz`, and `:basalCl` are drawn from a lognormal jumping distribution (where `σ` is in log-space.)
 
 """
-function proposaljump(p::Proposal, j::Proposal; rng::AbstractRNG=Xoshiro(), f::Tuple{Vararg{Symbol}}=proposals)
+function proposaljump(p::Proposal, j::Proposal; rng::AbstractRNG=Xoshiro(), f::Tuple{Vararg{Symbol}}=fieldnames(Proposal))
 
     jumpname = rand(rng,f)
     logdist = jumpname ∈ (:dmlt, :dfrz, :basalCl)
-    jump = j[jumpname] * randn(rng)
-    x = p[jumpname]
+    jump = getproperty(j,jumpname) * randn(rng)
+    x = getproperty(p,jumpname)
     x = logdist ? log(x) : x
     x += jump
     x = ifelse(logdist, exp(x),x)
@@ -73,7 +73,7 @@ porewatermetropolis...
 ```
 Not tested, yet...
 """
-function porewatermetropolis(p::Proposal, jumpsigma::Proposal, prior::CoreData; burnin::Int=0, chainsteps::Int=100, k::Constants=Constants(), seawater::Water=mcmurdosound(), explore::Tuple{Vararg{Symbol}}=proposals, climate::ClimateHistory=LR04(), rng::AbstractRNG=Random.Xoshiro())
+function porewatermetropolis(p::Proposal, jumpsigma::Proposal, prior::CoreData; burnin::Int=0, chainsteps::Int=100, k::Constants=Constants(), seawater::Water=mcmurdosound(), explore::Tuple{Vararg{Symbol}}=fieldnames(Proposal), climate::ClimateHistory=LR04(), rng::AbstractRNG=Random.Xoshiro())
 
     scalejump=2.4
 
@@ -82,7 +82,7 @@ function porewatermetropolis(p::Proposal, jumpsigma::Proposal, prior::CoreData; 
 
     ϕ = p # make a new proposal from the original.
 
-    chains = Matrix{Float64}(undef, length(proposals), chainsteps)
+    chains = Matrix{Float64}(undef, length(filenames(Proposal)), chainsteps)
     lldist = Vector{Float64}(undef, chainsteps)
     acceptance = falses(chainsteps)
 
@@ -153,7 +153,7 @@ function porewatermetropolis(p::Proposal, jumpsigma::Proposal, prior::CoreData; 
         end
         
 
-        chains[:,i] .= (p...,)
+        chains[:,i] .= fastsplat(p)
         lldist[i] = ll
 
         if iszero(i % chainupdate) # Update progress 
@@ -162,7 +162,7 @@ function porewatermetropolis(p::Proposal, jumpsigma::Proposal, prior::CoreData; 
         end
 
     end
-    outnames = (proposals..., :ll, :accept)
+    outnames = (fieldnames(Proposal)..., :ll, :accept)
     outvalues = ((chains[i,:] for i in axes(chains,1))..., lldist, acceptance)
     NamedTuple{outnames}(outvalues)
 end
