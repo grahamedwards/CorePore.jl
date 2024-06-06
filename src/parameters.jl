@@ -4,52 +4,51 @@
 
     water(Cl, O)
 
-Returns a NamedTuple with values of chlorinity `Cl` and δ¹⁸O `O`(necessarily `Float64`s). 
+Custom `struct` containing `Float64` values of chlorinity `Cl` and δ¹⁸O `O`. Built-in splatting functionality.
 
-see also: [`mcmurdoshelf`](@ref), [`mcmurdosound`](@ref), [`PorewaterDiffusion.Water`](@ref)
-
-"""
-water(Cl::Number,O::Number) = (; Cl=float(Cl), O=float(O))
+see also: [`mcmurdoshelf`](@ref), [`mcmurdosound`](@ref)
 
 """
-    Water
+@kwdef struct Water
+    Cl::Float64
+    O::Float64
+end
 
-`DataType` declared as a shorthand for `NamedTuple{(:Cl, :O), Tuple{Float64,Float64}}` because Graham likes the splatting functionality of NamedTuples and structs don't have it!
-
-see also: [`water`](@ref)
-    
-"""
-const Water = NamedTuple{(:Cl, :O), Tuple{Float64,Float64}}
+# Add splatting functionality
+function Base.iterate(@nospecialize(x::Water),i::Int=1)
+    y = ifelse(i==1, x.Cl, nothing)
+    y = ifelse(i==2, x.O, y)
+    ifelse(isnothing(y), nothing, (y,i+1))
+end
 
 """
     mcmurdoshelf()
 
-Generate a [`water`](@ref) NamedTuple with coretop porewater compositions from the McMurdo ice shelf. Pairs with core ANDRILL-1B.
+Generate a [`Water`](@ref) instance with coretop porewater compositions from the McMurdo ice shelf. Pairs with core ANDRILL-1B.
 
-see also: [`water`](@ref), [`andrill1b`](@ref)
+see also: [`andrill1b`](@ref)
 
 """
-mcmurdoshelf() = water(19.2657,-0.33)
+mcmurdoshelf() = Water(19.2657,-0.33)
 
 """
     mcmurdosound()
 
-Generate a [`water`](@ref) NamedTuple with southern McMurdo Sound water compositions. Pair with core ANDRILL-2A.
+Generate a [`Water`](@ref) instance with southern McMurdo Sound water compositions. Pair with core ANDRILL-2A.
 
-see also: [`water`](@ref), [`andrill2a`](@ref)
+see also:  [`andrill2a`](@ref)
 
 """
-mcmurdosound() = water(19.81655,-1.0)
+mcmurdosound() = Water(19.81655,-1.0)
 
 """
     deepbonney()
 
-    Generate a [`water`](@ref) NamedTuple with >30 m Lake Bonney water compositions. Use for sediment column basal boundary condition. Chloridity (143.333 g/L  ÷ 1.2 kg/L ≈ 119 g/kg) from Angino+ 1963 ([doi:10.1086/626879](https://doi.org/10.1086/626879)) and δ¹⁸O from Matsubaya+ 1979 ([doi:10.1016/0016-7037(79)90042-5](https://doi.org/10.1016/0016-7037(79)90042-5)).
+    Generate a [`Water`](@ref) instance with >30 m Lake Bonney water compositions. Use for sediment column basal boundary condition. Chloridity (143.333 g/L  ÷ 1.2 kg/L ≈ 119 g/kg) from Angino+ 1963 ([doi:10.1086/626879](https://doi.org/10.1086/626879)) and δ¹⁸O from Matsubaya+ 1979 ([doi:10.1016/0016-7037(79)90042-5](https://doi.org/10.1016/0016-7037(79)90042-5)).
     
-see also: [`water`](@ref).
 
 """
-deepbonney() = water(119.44416666666667,-25.2)
+deepbonney() = Water(119.44416666666667,-25.2)
 
 
 

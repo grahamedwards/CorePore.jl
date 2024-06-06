@@ -12,7 +12,7 @@ see also: [`porewaterhistory`](@ref)
 function porewaterhistory!(sc::SedimentColumn, p::Proposal, k::Constants, climhist::ClimateHistory, sw::Water, ka_dt::Int)
     #sc.Cl.p .= sc.Cl.o .= sw.Cl
     #sc.O.p .= sc.O.o .= sw.O
-    equilibratecolumn!(sc,sw,water(p.basalCl,p.basalO),k.z,p.flr)
+    equilibratecolumn!(sc,sw,Water(p.basalCl,p.basalO),k.z,p.flr)
 
     isd = searchsortedfirst(climhist.t, p.onset, rev=true)
     #isd = ifelse(isd<climhist.n, isd, climhist.n)
