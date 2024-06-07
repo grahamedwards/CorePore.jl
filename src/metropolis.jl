@@ -77,14 +77,26 @@ function porewatermetropolis(p::Proposal, jumpsigma::Proposal, prior::CoreData; 
 
     scalejump=2.4
 
-    pwhfunc = onlychloride ? chlorporewaterhistory! : porewaterhistory!
+    pwhfunc = if onlychloride 
+        explore_ = ()
+        @inbounds for i ∈ explore
+            if i != :basalO
+                explore_ = (explore_...,i)
+            end
+        end
+        explore = explore_
+        @warn "Chloride-only mode (onlychloride=true): MCMC will not explore :basalO (= $(p.basalO))"
+        chlorporewaterhistory!
+    else
+        porewaterhistory!
+    end
 
     record_max_age = first(climate.t)
     climate_limits = extrema(climate.x)
 
     ϕ = p # make a new proposal from the original.
 
-    chains = Matrix{Float64}(undef, length(filenames(Proposal)), chainsteps)
+    chains = Matrix{Float64}(undef, length(fieldnames(Proposal)), chainsteps)
     lldist = Vector{Float64}(undef, chainsteps)
     acceptance = falses(chainsteps)
 
@@ -94,7 +106,7 @@ function porewatermetropolis(p::Proposal, jumpsigma::Proposal, prior::CoreData; 
     pwhfunc(sc, ϕ, k, climate, seawater, ka_dt)
     
     llCl, llO = loglikelihood(prior.z,prior.Cl.mu,prior.Cl.sig,k.z,sc.Cl.p), loglikelihood(prior.z,prior.O.mu,prior.O.sig,k.z,sc.O.p)
-    ll = llCl + llO
+    ll = llCl + ifelse(onlychloride,0,llO)
     
     clock = time()
     burnupdate, chainupdate = div.((ifelse(iszero(burnin),1,burnin), ifelse(iszero(chainsteps),1,chainsteps)),20,RoundUp)
@@ -109,10 +121,10 @@ function porewatermetropolis(p::Proposal, jumpsigma::Proposal, prior::CoreData; 
         ϕ, jumpname, jump = proposaljump(p, jumpsigma, f=explore, rng=rng)
         if strictpriors(ϕ, record_max_age, climate_limits, k.depth)
 
-            pwhfunc!(sc, ϕ, k, climate, seawater, ka_dt)
+            pwhfunc(sc, ϕ, k, climate, seawater, ka_dt)
 
             llCl, llO = loglikelihood(prior.z,prior.Cl.mu,prior.Cl.sig,k.z,sc.Cl.p), loglikelihood(prior.z,prior.O.mu,prior.O.sig,k.z,sc.O.p)
-            llϕ = llCl + llO
+            llϕ = llCl + ifelse(onlychloride,0,llO)
         else
             llϕ=-Inf
         end
@@ -142,7 +154,7 @@ function porewatermetropolis(p::Proposal, jumpsigma::Proposal, prior::CoreData; 
             pwhfunc(sc, ϕ, k, climate, seawater, ka_dt)
 
             llCl, llO = loglikelihood(prior.z,prior.Cl.mu,prior.Cl.sig,k.z,sc.Cl.p), loglikelihood(prior.z,prior.O.mu,prior.O.sig,k.z,sc.O.p)
-            llϕ = llCl + llO
+            llϕ = llCl + ifelse(onlychloride,0,llO)
         else
             llϕ=-Inf
         end

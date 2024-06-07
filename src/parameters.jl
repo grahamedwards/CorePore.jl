@@ -387,7 +387,7 @@ function update(x::Proposal, f::Symbol,v::Number)
 end
 
 """
-    fastsplat(x)
+    fastsplat(x::Proposal)
 
 Returns a tuple of the contents of `x`. Avoids type inherent instability of `Base.iterate` for fast splatting.
 """

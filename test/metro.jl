@@ -22,3 +22,21 @@ spargs = (1000., (1.,4.), Constants().depth)
 
 # stopwatch
 @test "0% |■■□□□□□□□□| 100%  ||  step: 27 / 100  ||  time: 0.0 m" == PorewaterDiffusion.stopwatch(27,100,time())
+
+
+
+p, jumpsize = Proposal(5320., 1e-4,1e-3, 3.5, 4.2, 1000., deepbonney()...,), Proposal(10., .1, .1, .1, .1,10, 1,1)
+
+
+
+@silence x = porewatermetropolis(p, jumpsize, andrill2a(); burnin=20, chainsteps=20, k=Constants(), seawater=mcmurdosound(), climate=LR04(), onlychloride=false, rng=StableRNG(2560))
+
+@test first(x.ll) < last(x.ll)
+@test first(x.basalCl) > last(x.basalCl)
+@test first(x.basalO) < last(x.basalO)
+@test first(x.onset) > last(x.onset)
+
+@silence x = porewatermetropolis(p, jumpsize, andrill2a(); burnin=20, chainsteps=20, k=Constants(), seawater=mcmurdosound(), climate=LR04(), onlychloride=true, rng=StableRNG(2560))
+
+@test first(x.ll) < last(x.ll)
+@test last(x.basalO) == p.basalO
