@@ -114,7 +114,7 @@ function diffuseadvectcolumn!(sc::SedimentColumn, k::Constants, flr::Float64)
     sc.Cl.p[1] = sc.Cl.o[1]
     sc.O.p[1] = sc.O.o[1]
 
-    @inbounds @simd for i = 2:iflr
+    @inbounds @simd ivdep for i = 2:iflr
 
         above = i-1
         below = i+1
@@ -130,6 +130,43 @@ function diffuseadvectcolumn!(sc::SedimentColumn, k::Constants, flr::Float64)
 
 # And time steps forward, replacing o with p.
     sc.O.o .= sc.O.p
+    sc.Cl.o .= sc.Cl.p
+    sc.rho.o .= sc.rho.p
+    
+end
+
+
+
+"""
+
+```julia
+chlordiffuseadvectcolumn!(sc, k, flr)
+```
+
+Same as [`diffuseadvectcolumn!`](@ref), but skipping δ¹⁸O calculations. 
+
+"""
+function chlordiffuseadvectcolumn!(sc::SedimentColumn, k::Constants, flr::Float64)
+
+    iflr = round(Int, flr / k.dz + 1)
+    iflr = ifelse(iflr >= k.nz, k.penultimate_node, iflr) # make sure iflr is no deeper than the penultimate node. 
+    iflr -= ifelse(k.z[iflr] > flr, 1,0)
+
+    sc.Cl.p[1] = sc.Cl.o[1]
+
+    @inbounds @simd ivdep for i = 2:iflr
+
+        above = i-1
+        below = i+1
+
+        vdtdz = velocity(sc.rho.o[i], sc.rho.o[above],k.k) * k.dtdz
+
+        sc.Cl.p[i] = diffusionadvection(sc.Cl.o[i],sc.Cl.o[above], sc.Cl.o[below], k.k1cl[i], k.k2cl[i], vdtdz) 
+
+        sc.rho.p[i] = density(sc.Cl.p[i])
+    end
+
+# And time steps forward, replacing o with p.
     sc.Cl.o .= sc.Cl.p
     sc.rho.o .= sc.rho.p
     

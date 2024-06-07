@@ -10,8 +10,6 @@ see also: [`porewaterhistory`](@ref)
 
 """
 function porewaterhistory!(sc::SedimentColumn, p::Proposal, k::Constants, climhist::ClimateHistory, sw::Water, ka_dt::Int)
-    #sc.Cl.p .= sc.Cl.o .= sw.Cl
-    #sc.O.p .= sc.O.o .= sw.O
     equilibratecolumn!(sc,sw,Water(p.basalCl,p.basalO),k.z,p.flr)
 
     isd = searchsortedfirst(climhist.t, p.onset, rev=true)
@@ -30,6 +28,36 @@ function porewaterhistory!(sc::SedimentColumn, p::Proposal, k::Constants, climhi
     end
 end
 
+
+
+"""
+
+```julia
+chlorporewaterhistory!(sc, p, k, climhist, seawater, ka_dt)
+```
+
+Same as [`porewaterhistory`](@ref), but skipping δ¹⁸O calculations. 
+
+"""
+function chlorporewaterhistory!(sc::SedimentColumn, p::Proposal, k::Constants, climhist::ClimateHistory, sw::Water, ka_dt::Int)
+
+    equilibratecolumn!(sc,sw,Water(p.basalCl,p.basalO),k.z,p.flr)
+
+    isd = searchsortedfirst(climhist.t, p.onset, rev=true)
+
+    @inbounds for t = isd:climhist.n
+        climate = climhist.x[t]
+
+        @inbounds for j = 1:ka_dt
+
+            Clo,_, ρ = boundaryconditions(sc.Cl.o[1], sc.O.o[1], climate, p.sea2frz, p.frz2mlt, p.dmlt, p.dfrz, sw.Cl, sw.O, k.dz, k.dt)
+
+            sc.Cl.o[1], sc.rho.o[1] = Clo, ρ
+            
+            chlordiffuseadvectcolumn!(sc,k,p.flr)
+        end
+    end
+end
 
 
 

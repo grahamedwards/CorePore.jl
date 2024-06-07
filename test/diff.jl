@@ -46,6 +46,13 @@ diffuseadvectcolumn!(sc,k, k.depth+100) # test floor overshoot correction
 @test sc.Cl.o[2] ≈ Cltest 
 @test sc.O.o[2] ≈ d18Otest
 
+sc = SedimentColumn(k.nz,sw...)
+sc.Cl.o[1] *= 1.2
+sc.rho.o[1] = density(sc.Cl.o[1])
+
+PorewaterDiffusion.chlordiffuseadvectcolumn!(sc,k, k.depth+100)
+@test sc.Cl.o[2] ≈ Cltest 
+@test sc.O.o[2] ≈ sw.O
 
 mO, mCl = PorewaterDiffusion.equilibratecolumn!(sc,mcmurdosound(),deepbonney(),k.z,k.depth/2)
     @test mO ≈ -0.0242
