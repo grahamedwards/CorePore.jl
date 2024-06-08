@@ -1,3 +1,3 @@
 [deps]
 Documenter = "e30172f5-a6a5-5a46-863b-614d45cd2de4"
-PorewaterDiffusion = "c4f3a3d5-9d2b-45a9-ae02-31b9e0b08e88"
+CorePore = "c4f3a3d5-9d2b-45a9-ae02-31b9e0b08e88"
