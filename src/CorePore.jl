@@ -1,4 +1,4 @@
-module PorewaterDiffusion
+module CorePore
 import DelimitedFiles 
 using Random
 

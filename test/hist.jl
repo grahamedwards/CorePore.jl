@@ -1,9 +1,9 @@
-@test PorewaterDiffusion.dt_climatetimestep(100:-1:0,10) == 100
+@test CorePore.dt_climatetimestep(100:-1:0,10) == 100
 
 ch, k, sw = LR04(), Constants(), mcmurdosound()
 p = Proposal(5320., 4e-5,1e-2,3.5, 4.2, 1990., sw...)
 sc = SedimentColumn(k.nz,sw...)
-porewaterhistory!(sc,p, k, ch,sw, PorewaterDiffusion.dt_climatetimestep(ch.t,k.dt))
+porewaterhistory!(sc,p, k, ch,sw, CorePore.dt_climatetimestep(ch.t,k.dt))
 
 @test sc.Cl.p[end-1] == sw.Cl
 @test 19 < sc.Cl.p[2] < 20
@@ -12,7 +12,7 @@ porewaterhistory!(sc,p, k, ch,sw, PorewaterDiffusion.dt_climatetimestep(ch.t,k.d
 @test -2.6 < sc.O.p[2] < -2.5
 
 sc = SedimentColumn(k.nz,sw...)
-PorewaterDiffusion.chlorporewaterhistory!(sc,p, k, ch,sw, PorewaterDiffusion.dt_climatetimestep(ch.t,k.dt))
+CorePore.chlorporewaterhistory!(sc,p, k, ch,sw, CorePore.dt_climatetimestep(ch.t,k.dt))
 @test 19 < sc.Cl.p[2] < 20
 @test sc.O.p[2] == sw.O
 

@@ -1,4 +1,4 @@
-using PorewaterDiffusion
+using CorePore
 using Test
 using StableRNGs
 

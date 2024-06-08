@@ -1,4 +1,4 @@
-name = "PorewaterDiffusion"
+name = "CorePore"
 uuid = "c4f3a3d5-9d2b-45a9-ae02-31b9e0b08e88"
 authors = ["Graham Harper Edwards", "Sarah U. Neuhaus"]
 version = "1.1.0-DEV"

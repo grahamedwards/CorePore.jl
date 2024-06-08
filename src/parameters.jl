@@ -74,7 +74,7 @@ Same as above, but for a core with only chlorinity or δ¹⁸O data (the other V
 
 ---
 
-`PorewaterDiffusion.jl` comes loaded with convenient functions to generate data for [`andrill2a`](@ref) from Tracy+ 2010 ([doi:10.1130/G30849.1](https://doi.org/10.1130/G30849.1)) and [`andrill1b`](@ref) from Pompilio+ 2007 (https://digitalcommons.unl.edu/andrillrespub/37). 
+`CorePore.jl` comes loaded with convenience functions to generate data for [`andrill2a`](@ref) from Tracy+ 2010 ([doi:10.1130/G30849.1](https://doi.org/10.1130/G30849.1)) and [`andrill1b`](@ref) from Pompilio+ 2007 (https://digitalcommons.unl.edu/andrillrespub/37). 
 
 """
 struct CoreData
@@ -323,7 +323,7 @@ end
 
     Proposal
 
-Struct containing porewater parameters (described below). All inputs must be of type Number (converts to Float64). Built-in functionality includes splatting (`...`) and [`PorewaterDiffusion.fastsplat`](@ref).
+Struct containing porewater parameters (described below). All inputs must be of type Number (converts to Float64). Built-in functionality includes splatting (`...`) and [`CorePore.fastsplat`](@ref).
 
 | field | description | units | default |
 | :---- | :---------- | :---- | :------ |

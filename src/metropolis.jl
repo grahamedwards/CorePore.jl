@@ -14,7 +14,7 @@ end
 
 """
 
-    PorewaterDiffusion.strictpriors(p::Proposal, record_max_age::Number, climatelimits::Tuple{Number,Number}, depth::Number)
+    CorePore.strictpriors(p::Proposal, record_max_age::Number, climatelimits::Tuple{Number,Number}, depth::Number)
 
 Evalute strict constraints on priors that will automatically reject a proposal with...
 - Onset date beyond the climate record timespan (in ka) (`record_max_age`)
@@ -32,7 +32,7 @@ function strictpriors(p::Proposal, record_max_age::Number, climatelimits::Tuple{
     
     x &= 0 < p.onset <= record_max_age
     x &= climatelimits[1] < p.sea2frz < p.frz2mlt < climatelimits[2]
-    x &= 0 < p.dfrz <= 0.002 # ≤ 0.4dt/dz to prevent an error in a log-calculation in `PorewaterDiffusion.boundaryconditions`
+    x &= 0 < p.dfrz <= 0.002 # ≤ 0.4dt/dz to prevent an error in a log-calculation in `CorePore.boundaryconditions`
     x &= 0 < p.dmlt <= 10.
     x &= 0 < p.flr <= depth
     x &= 0 < p.basalCl <= 200
@@ -45,7 +45,7 @@ end
 
 """
 
-    PorewaterDiffusion.proposaljump(p::Proposal, σ::Proposal; f, rng::AbstractRNG)
+    CorePore.proposaljump(p::Proposal, σ::Proposal; f, rng::AbstractRNG)
 
 Add a random jump to a randomly selected field of `p` with a corresponding normal jumping distribution defined by the corresponding field in `σ`. The possible fields may be specified by providing a Tuple of Symbols `f` (default=`fieldnames(Proposal)`), and a specific RNG seed may be provided.
 
@@ -120,7 +120,7 @@ function porewatermetropolis(p::Proposal, jumpsigma::Proposal, prior::CoreData; 
     acceptance = falses(chainsteps)
 
     sc = SedimentColumn(k.nz,seawater...)
-    ka_dt = PorewaterDiffusion.dt_climatetimestep(climate.t,k.dt)
+    ka_dt = CorePore.dt_climatetimestep(climate.t,k.dt)
     
     pwhfunc(sc, ϕ, k, climate, seawater, ka_dt)
     

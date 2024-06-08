@@ -63,6 +63,6 @@ jobs:
       - run: |
           julia --project=docs -e '
             using Documenter: DocMeta, doctest
-            using PorewaterDiffusion
-            DocMeta.setdocmeta!(PorewaterDiffusion, :DocTestSetup, :(using PorewaterDiffusion); recursive=true)
-            doctest(PorewaterDiffusion)'
+            using CorePore
+            DocMeta.setdocmeta!(CorePore, :DocTestSetup, :(using CorePore); recursive=true)
+            doctest(CorePore)'
