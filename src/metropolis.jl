@@ -51,6 +51,8 @@ Add a random jump to a randomly selected field of `p` with a corresponding norma
 
 Note that `:dmlt`, `:dfrz`, and `:basalCl` are drawn from a lognormal jumping distribution (where `σ` is in log-space.)
 
+see also: [`porewatermetropolis`](@ref), [`Proposal`](@ref)
+
 """
 function proposaljump(p::Proposal, j::Proposal; rng::AbstractRNG=Xoshiro(), f::Tuple{Vararg{Symbol}}=fieldnames(Proposal))
 
@@ -69,11 +71,28 @@ end
 """
 
 ```julia
-porewatermetropolis...
+porewatermetropolis(p, σ, prior; burnin=10, chainsteps=10, climate, k, seawater, onlychloride=true, explore, rng)
 ```
-Not tested, yet...
+
+Executes a Markov chain Monte Carlo (MCMC) routine that explores the parameter space of the variables in [`Proposal`](@ref) instance `p`, constrained by sediment column porewater chemistry records in [`CoreData`](@ref) instance `prior` and climate record in [`ClimateHistory`](@ref) instance `climate` (=[`LR04`](@ref) by default). `Proposal` instance `σ` describes the (1σ) Gaussian jump size corresponding to each field in `p` (note that fields `:dmlt`, `:dfrz`, and `:basalCl` use a log-normal jump and require a log-space value in `σ`). 
+
+Kwarg `onlychloride` determines whether the MCMC inverts for only porewater chloridity (default=`true`) or porewater chloridity and δ¹⁸O (`false`).
+
+Additional kwargs include...
+
+kwarg | `DataType` | description | default
+:---- | :--------: | :---------- | ------:
+burnin | `Int` | number of Markov chain burnin-warm-up steps | `10`
+chainsteps | `Int` | number of recorded Markov chains steps | `10`
+k | [`Constants`](@ref) | constants and coefficients used in diffusion-advection calculations | `Constants()`
+seawater | [`Water`](@ref) | seawater composition overlying sediment column | `mcmurdosound()`
+explore | `Tuple{Vararg{Symbol}}` | parameters explored by the MCMC | `fieldnames(Proposal)`
+rng | `AbstractRNG` | optional random number seed | `Random.Xoshiro()`
+
+see also: [`Proposal`](@ref), [`CoreData`](@ref), [`ClimateHistory`](@ref), [`Constants`](@ref), [`Water`](@ref)
+
 """
-function porewatermetropolis(p::Proposal, jumpsigma::Proposal, prior::CoreData; burnin::Int=0, chainsteps::Int=100, k::Constants=Constants(), seawater::Water=mcmurdosound(), onlychloride::Bool=true, explore::Tuple{Vararg{Symbol}}=fieldnames(Proposal), climate::ClimateHistory=LR04(), rng::AbstractRNG=Random.Xoshiro())
+function porewatermetropolis(p::Proposal, jumpsigma::Proposal, prior::CoreData; burnin::Int=10, chainsteps::Int=10, climate::ClimateHistory=LR04(), k::Constants=Constants(), seawater::Water=mcmurdosound(), onlychloride::Bool=true, explore::Tuple{Vararg{Symbol}}=fieldnames(Proposal),  rng::AbstractRNG=Random.Xoshiro())
 
     scalejump=2.4
 
