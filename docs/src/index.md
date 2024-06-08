@@ -1,14 +1,14 @@
 ```@meta
-CurrentModule = PorewaterDiffusion
+CurrentModule = CorePore
 ```
 
-# PorewaterDiffusion
+# CorePore
 
-Documentation for [PorewaterDiffusion](https://github.com/grahamedwards/PorewaterDiffusion.jl).
+Documentation for [CorePore](https://github.com/grahamedwards/CorePore.jl).
 
 ```@index
 ```
 
 ```@autodocs
-Modules = [PorewaterDiffusion]
+Modules = [CorePore]
 ```
