@@ -63,6 +63,7 @@ jobs:
       - run: |
           julia --project=docs -e '
             using Documenter: DocMeta, doctest
+            import Pkg; Pkg.rm("PorewaterDiffusion")
             using CorePore
             DocMeta.setdocmeta!(CorePore, :DocTestSetup, :(using CorePore); recursive=true)
             doctest(CorePore)'
