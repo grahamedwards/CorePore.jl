@@ -1,16 +1,16 @@
-using PorewaterDiffusion
+using CorePore
 using Documenter
 
-DocMeta.setdocmeta!(PorewaterDiffusion, :DocTestSetup, :(using PorewaterDiffusion); recursive=true)
+DocMeta.setdocmeta!(CorePore, :DocTestSetup, :(using CorePore); recursive=true)
 
 makedocs(;
-    modules=[PorewaterDiffusion],
+    modules=[CorePore],
     authors="Graham Harper Edwards, Sarah Neuhaus",
-    repo="https://github.com/grahamedwards/PorewaterDiffusion.jl/blob/{commit}{path}#{line}",
-    sitename="PorewaterDiffusion.jl",
+    repo="https://github.com/grahamedwards/CorePore.jl/blob/{commit}{path}#{line}",
+    sitename="CorePore.jl",
     format=Documenter.HTML(;
         prettyurls=get(ENV, "CI", "false") == "true",
-        canonical="https://grahamedwards.github.io/PorewaterDiffusion.jl",
+        canonical="https://grahamedwards.github.io/CorePore.jl",
         edit_link="main",
         assets=String[],
     ),
@@ -20,6 +20,6 @@ makedocs(;
 )
 
 deploydocs(;
-    repo="github.com/grahamedwards/PorewaterDiffusion.jl",
+    repo="github.com/grahamedwards/CorePore.jl",
     devbranch="main",
 )
