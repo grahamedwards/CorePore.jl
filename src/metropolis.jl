@@ -104,7 +104,9 @@ function porewatermetropolis(p::Proposal, jumpsigma::Proposal, prior::CoreData; 
             end
         end
         explore = explore_
-        @warn "Chloride-only mode (onlychloride=true): MCMC will not explore :basalO (= $(p.basalO))"
+        printstyled("Chloride-only mode (onlychloride=true): ", bold=true,color=:cyan)
+        println(" MCMC will not explore :basalO (= $(p.basalO))\n\n")
+        flush(stdout)
         chlorporewaterhistory!
     else
         porewaterhistory!

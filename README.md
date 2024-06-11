@@ -23,7 +23,7 @@ After installing, just type `using CorePore` to use.
 
 ## Usage
 
-The primary functionality of this package is hosted in the function `porewatermetropolis`. Please read the documentation for its full functionality and the underlying forward models. The example below will give you a quick start:
+The primary functionality of this package is hosted in the function `porewatermetropolis`. Please read the documentation for its full functionality and the underlying forward models. The example below (also available as notebook `example.ipynb`) will give you a quick start:
 
 ```julia
 using CorePore
