@@ -5,6 +5,13 @@ Requires.@require WGLMakie="276b4fcb-3e11-5398-bf8b-a0c2d153d008" @eval using .W
 import CleanHistograms
 export histograms, defaultlabels
 
+include(download("https://raw.githubusercontent.com/grahamedwards/CleanHistograms.jl/main/src/CleanHistograms.jl"))
+
+function table(x::NamedTuple)
+
+
+end 
+
 defaultlabels() = (onset = "Onset date (ka)", dfrz = "Freezing rate (m/yr)", dmlt = "Melting rate (m/yr)", sea2frz = "Basal freezing (‰, δ¹⁸O)", frz2mlt = "Basal melting (‰, δ¹⁸O)", flr = "Column depth (m)", basalCl = "Deep chloridity (g/kg)", basalO = "Deep δ¹⁸O (‰)")
 
 
@@ -36,3 +43,7 @@ function histograms(x::NamedTuple; f=Makie.Figure(size=(600,600)),  panels::Name
     end
     f
 end
+
+
+
+x=" "
