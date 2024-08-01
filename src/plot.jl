@@ -3,7 +3,7 @@ Requires.@require GLMakie="e9467ef8-e4e7-5192-8a1a-b1aee30e663a"  @eval using .W
 Requires.@require WGLMakie="276b4fcb-3e11-5398-bf8b-a0c2d153d008" @eval using .WGLMakie
 
 import Markdown
-export table, histograms, defaultlabels
+export table, histograms, defaultlabels, traces
 
 include(download("https://raw.githubusercontent.com/grahamedwards/CleanHistograms.jl/main/src/CleanHistograms.jl"))
 
@@ -53,14 +53,13 @@ defaultlabels() = (onset = "Onset date (ka)", dfrz = "Freezing rate (m/yr)", dml
 
     histograms(x; f=Makie.Figure(), panels=defaultlabels(), bins=32, cols=auto, darkmode=false)
 
-Returns panels of histograms in NamedTuple of posterior chains `x` over `col` columns. Designate specific fields of `x` to plot in panels as a `NamedTuple` with names in `x` paired to labels as `String`s. Plots all panels by default.
+Returns panels of histograms for NamedTuple of posterior chains `x` over `col` columns. Designate specific fields of `x` to plot in panels as a `NamedTuple` with names in `x` paired to labels as `String`s. Plots all panels by default.
 Optionally invert colorscheme with darkmode=`true`.
 
 """
 function histograms(x::NamedTuple; f=Makie.Figure(size=(600,600)),  panels::NamedTuple = defaultlabels(), cols::Int=0, bins::Int=32, darkmode::Bool=false)
-    n = length(panels)
-    
-    ks = keys(panels)
+
+    n, ks = length(panels), keys(panels)
 
     pltclr = ifelse(darkmode,:white,:black)
 
@@ -75,12 +74,48 @@ function histograms(x::NamedTuple; f=Makie.Figure(size=(600,600)),  panels::Name
 
             xk = x[k]
 
-            ax =    Makie.Axis(f[i,j], xlabel=panels[k], 
-                        bottomspinecolor=pltclr,xtickcolor=pltclr,xticklabelcolor=pltclr, xlabelcolor=pltclr,backgroundcolor=ifelse(darkmode,:transparent,:white),
-                        xgridvisible=false,ygridvisible=false,yticklabelsvisible=false,yticksvisible=false,rightspinevisible=false,leftspinevisible=false,topspinevisible=false)
+            ax = Makie.Axis(f[i,j], xlabel=panels[k], 
+                    bottomspinecolor=pltclr,xtickcolor=pltclr,xticklabelcolor=pltclr, xlabelcolor=pltclr,backgroundcolor=ifelse(darkmode,:transparent,:white),
+                    xgridvisible=false,ygridvisible=false,yticklabelsvisible=false,yticksvisible=false,rightspinevisible=false,leftspinevisible=false,topspinevisible=false)
             h = CleanHistograms.cleanhist(xk,bins=bins)
             band!(ax,h.x,h.y,zero(h.y), color=(pltclr,0.1))
             lines!(ax,h.x,h.y, color=pltclr, linewidth=2,)
+        end 
+    end
+    f
+end
+
+
+
+"""
+
+   traces(x; f=Makie.Figure(), domain, panels=defaultlabels(), cols=auto, darkmode=false)
+
+Returns panels of trace plots for NamedTuple of posterior chains `x` over `col` columns. Designate specific fields of `x` to plot in panels as a `NamedTuple` with names in `x` paired to labels as `String`s. Plots all panels by default. Optionally provide a UnitRange of Markov chain steps to plot with `domain`. Optionally invert colorscheme with darkmode=`true`.
+
+"""
+function traces(x; f=Makie.Figure(size=(800,400)), domain::UnitRange= 0:0, panels=defaultlabels(), cols::Int=0, darkmode=false)
+    n, ks = length(panels), keys(panels)
+
+    d = ifelse(length(domain)>1, domain, 1:length(x[1]))
+
+    pltclr = ifelse(darkmode,:white,:black)
+
+    cols = ifelse(cols < 1, ceil(Int,sqrt(n)), cols)
+    rows = ceil(Int,n/cols)
+
+    @inbounds for i = 1:rows, j=1:cols
+        ij = cols * (i-1) + j
+        if ij < n
+            k = ks[ij]
+            @assert k ∈ keys(x) "Provided panel $k is not a key in chains provided in `x`"
+
+            xk = x[k]
+
+            ax = Makie.Axis(f[i,j], ylabel=panels[k], 
+                    leftspinecolor=pltclr,ytickcolor=pltclr,yticklabelcolor=pltclr, ylabelcolor=pltclr,backgroundcolor=ifelse(darkmode,:transparent,:white),
+                    xgridvisible=false,ygridvisible=false,xticklabelsvisible=false,xticksvisible=false,rightspinevisible=false,bottomspinevisible=false,topspinevisible=false)
+            lines!(ax,xk[d],color=pltclr)
         end 
     end
     f
