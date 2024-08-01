@@ -2,14 +2,32 @@ Requires.@require CairoMakie="13f3f980-e62b-5c42-98c6-ff1f3baf88f0" @eval using 
 Requires.@require GLMakie="e9467ef8-e4e7-5192-8a1a-b1aee30e663a"  @eval using .WGLMakie
 Requires.@require WGLMakie="276b4fcb-3e11-5398-bf8b-a0c2d153d008" @eval using .WGLMakie
 
-import CleanHistograms
-export histograms, defaultlabels
+import Markdown
+export table, histograms, defaultlabels
 
 include(download("https://raw.githubusercontent.com/grahamedwards/CleanHistograms.jl/main/src/CleanHistograms.jl"))
 
 function table(x::NamedTuple)
+    k = keys(x)
+    h = keys(x[1])
 
+    t = if length(h)==1
+        "||m|\n|:--|:--|"
+    elseif length(h)==2
+        "|| μ | σ |\n|:--|:--|:--|"
+    elseif length(h)==3
+        "|| M | – | + |\n|:--|:--|:--|:--|"
+    end
 
+    @inbounds for i = keys(x)
+        l = "|$i"
+        xi = x[i]
+        @inbounds for j = eachindex(xi)
+            l *= "|$(xi[j])"
+        end
+        t *= "\n$l|"
+    end
+    Markdown.parse(t)
 end 
 
 defaultlabels() = (onset = "Onset date (ka)", dfrz = "Freezing rate (m/yr)", dmlt = "Melting rate (m/yr)", sea2frz = "Basal freezing (‰, δ¹⁸O)", frz2mlt = "Basal melting (‰, δ¹⁸O)", flr = "Column depth (m)", basalCl = "Deep chloridity (g/kg)", basalO = "Deep δ¹⁸O (‰)")
@@ -43,7 +61,3 @@ function histograms(x::NamedTuple; f=Makie.Figure(size=(600,600)),  panels::Name
     end
     f
 end
-
-
-
-x=" "

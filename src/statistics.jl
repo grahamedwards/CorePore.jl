@@ -84,7 +84,7 @@ end
 
     medians(x; ci::Float64)
 
-Calculate the medians of each field in NamedTuple `x`. Optionally provide a `ci` ∈ [0,1] of standard deviations to calculate, returned as the form `key` = (m=μ, s=σ). Use with the returned chains of [`porewatermetropolis`](@ref).
+Calculate the medians of each field in NamedTuple `x`. Optionally provide a `ci` ∈ [0,1] of standard deviations to calculate, returned as the form `key` = (m=median, l=lower, u=upper). Use with the returned chains of [`porewatermetropolis`](@ref).
 
 """
 function medians(x; ci::Float64=0.)
