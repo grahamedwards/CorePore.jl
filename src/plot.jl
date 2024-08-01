@@ -7,6 +7,14 @@ export table, histograms, defaultlabels
 
 include(download("https://raw.githubusercontent.com/grahamedwards/CleanHistograms.jl/main/src/CleanHistograms.jl"))
 
+
+"""
+
+    table(x)
+
+Print a styled Markdown table in the REPL of the summary statistics in `x`, generated with [`means`](@ref) or [`medians`](@ref).
+
+"""
 function table(x::NamedTuple)
     k = keys(x)
     h = keys(x[1])
@@ -30,9 +38,25 @@ function table(x::NamedTuple)
     Markdown.parse(t)
 end 
 
+
+"""
+
+    defaultlabels()
+
+Returns default labels corresponding to fields in [`Proposal`](@ref).
+
+"""
 defaultlabels() = (onset = "Onset date (ka)", dfrz = "Freezing rate (m/yr)", dmlt = "Melting rate (m/yr)", sea2frz = "Basal freezing (‰, δ¹⁸O)", frz2mlt = "Basal melting (‰, δ¹⁸O)", flr = "Column depth (m)", basalCl = "Deep chloridity (g/kg)", basalO = "Deep δ¹⁸O (‰)")
 
 
+"""
+
+    histograms(x; f=Makie.Figure(), panels=defaultlabels(), bins=32, cols=auto, darkmode=false)
+
+Returns panels of histograms in NamedTuple of posterior chains `x` over `col` columns. Designate specific fields of `x` to plot in panels as a `NamedTuple` with names in `x` paired to labels as `String`s. Plots all panels by default.
+Optionally invert colorscheme with darkmode=`true`.
+
+"""
 function histograms(x::NamedTuple; f=Makie.Figure(size=(600,600)),  panels::NamedTuple = defaultlabels(), cols::Int=0, bins::Int=32, darkmode::Bool=false)
     n = length(panels)
     
