@@ -12,8 +12,6 @@ macro silence(block)
     end
 end
 
-mean(x) = sum(x)/length(x)
-
 @testset "parameters" begin include("param.jl") end 
 
 @testset "diffusion" begin include("diff.jl") end

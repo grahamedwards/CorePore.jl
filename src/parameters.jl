@@ -334,7 +334,7 @@ Struct containing porewater parameters (described below). All inputs must be of 
 | `frz2mlt` | Benthic δ¹⁸O threshold for subglacial melting | ‰ | 4.2 |
 | `flr` | depth of diffusion-dominated porewater column | m | 1000. |
 | `basalCl` | chloridity at base of diffusion-dominated column | g/kg | 119.4 |
-| `basalO` | δ¹⁸O at base of diffusion-dominated column | g/kg | -25.2 |
+| `basalO` | δ¹⁸O at base of diffusion-dominated column | ‰ | -25.2 |
 
 see also: [`update`](@ref)
 

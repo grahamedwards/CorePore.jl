@@ -59,3 +59,41 @@ function loglikelihood(zo::T, muo::T, sigo::T, zm::AbstractRange{Float64}, m::T)
     end
     ll
 end
+
+
+"""
+
+    means(x; std::Integer)
+
+Calculate the means of each field in NamedTuple `x`. Optionally provide an integer number of standard deviations to calculate, returned as the form `key` = (m=μ, s=σ). Use with the returned chains of [`porewatermetropolis`](@ref).
+
+"""
+function means(x::NamedTuple; std::Int=0)
+    k = keys(x)
+    if std > 0
+    NamedTuple{k}( (m=Statistics.mean(x[i]), s=std*Statistics.std(x[i])) for i in k) 
+    else 
+    NamedTuple{k}(Statistics.mean(x[i]) for i in k) 
+    end 
+end
+
+
+
+
+"""
+
+    medians(x; ci::Float64)
+
+Calculate the medians of each field in NamedTuple `x`. Optionally provide a `ci` ∈ [0,1] of standard deviations to calculate, returned as the form `key` = (m=μ, s=σ). Use with the returned chains of [`porewatermetropolis`](@ref).
+
+"""
+function medians(x; ci::Float64=0.)
+    @assert 0 ≤ ci ≤ 1
+    k = keys(x)
+    if ci>0.
+    upper, lower = (0.5 + 0.5ci), 0.5ci
+    NamedTuple{k}( (m=Statistics.median(x[i]), l=Statistics.quantile(x[i],lower), u=Statistics.quantile(x[i],upper)) for i in k)
+    else 
+    NamedTuple{k}(Statistics.median(x[i]) for i in k) 
+    end 
+end
