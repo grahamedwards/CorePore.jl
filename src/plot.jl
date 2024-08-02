@@ -1,6 +1,6 @@
-Requires.@require CairoMakie="13f3f980-e62b-5c42-98c6-ff1f3baf88f0" @eval using .CairoMakie
-Requires.@require GLMakie="e9467ef8-e4e7-5192-8a1a-b1aee30e663a"  @eval using .WGLMakie
-Requires.@require WGLMakie="276b4fcb-3e11-5398-bf8b-a0c2d153d008" @eval using .WGLMakie
+Requires.@require CairoMakie="13f3f980-e62b-5c42-98c6-ff1f3baf88f0" @eval import .CairoMakie as Makie
+Requires.@require GLMakie="e9467ef8-e4e7-5192-8a1a-b1aee30e663a"  @eval import .WGLMakie as Makie
+Requires.@require WGLMakie="276b4fcb-3e11-5398-bf8b-a0c2d153d008" @eval import .WGLMakie as Makie
 
 import Markdown
 export table, histograms, defaultlabels, traces
@@ -78,8 +78,8 @@ function histograms(x::NamedTuple; f=Makie.Figure(size=(600,600)),  panels::Name
                     bottomspinecolor=pltclr,xtickcolor=pltclr,xticklabelcolor=pltclr, xlabelcolor=pltclr,backgroundcolor=ifelse(darkmode,:transparent,:white),
                     xgridvisible=false,ygridvisible=false,yticklabelsvisible=false,yticksvisible=false,rightspinevisible=false,leftspinevisible=false,topspinevisible=false)
             h = CleanHistograms.cleanhist(xk,bins=bins)
-            band!(ax,h.x,h.y,zero(h.y), color=(pltclr,0.1))
-            lines!(ax,h.x,h.y, color=pltclr, linewidth=2,)
+            Makie.band!(ax,h.x,h.y,zero(h.y), color=(pltclr,0.1))
+            Makie.lines!(ax,h.x,h.y, color=pltclr, linewidth=2,)
         end 
     end
     f
@@ -115,7 +115,7 @@ function traces(x; f=Makie.Figure(size=(800,400)), domain::UnitRange= 0:0, panel
             ax = Makie.Axis(f[i,j], ylabel=panels[k], 
                     leftspinecolor=pltclr,ytickcolor=pltclr,yticklabelcolor=pltclr, ylabelcolor=pltclr,backgroundcolor=ifelse(darkmode,:transparent,:white),
                     xgridvisible=false,ygridvisible=false,xticklabelsvisible=false,xticksvisible=false,rightspinevisible=false,bottomspinevisible=false,topspinevisible=false)
-            lines!(ax,xk[d],color=pltclr)
+            Makie.lines!(ax,xk[d],color=pltclr)
         end 
     end
     f
