@@ -3,7 +3,7 @@ Requires.@require GLMakie="e9467ef8-e4e7-5192-8a1a-b1aee30e663a"  @eval import .
 Requires.@require WGLMakie="276b4fcb-3e11-5398-bf8b-a0c2d153d008" @eval import .WGLMakie as Makie
 
 import Markdown
-export table, histograms, defaultlabels, traces
+export table, histograms, defaultlabels, traces, sieveresults, profiledensity, profiletrace
 
 include(download("https://raw.githubusercontent.com/grahamedwards/CleanHistograms.jl/main/src/CleanHistograms.jl"))
 
@@ -118,5 +118,103 @@ function traces(x; f=Makie.Figure(size=(800,400)), domain::UnitRange= 0:0, panel
             Makie.lines!(ax,xk[d],color=pltclr)
         end 
     end
+    f
+end
+
+
+
+"""
+
+    sieveresults(chains; start=1, sieve=1, stop=auto, k=Constants(), climate=LR04(), seawater=mcmurdoshelf())
+
+Sieve the chains of a [`porewatermetropolis`](@ref) run from `start` to `stop` (full chain length by default), including every `sieve`-th realization. Provide relevant Constants `k`, ClimateHistory `climate`, and `seawater` composition. 
+
+Returns a NamedTuple of depth nodes `z`, and corresponding matrices of `Cl` and `O` where rows correspond to nodes in `z` and columns correspond to sieved results.
+
+"""
+function sieveresults(chains::NamedTuple; k::Constants=Constants(), climate::ClimateHistory=LR04(), seawater::Water = mcmurdoshelf(), sieve::Int=1, start::Int=1, stop::Int=0)
+
+    chainlength = length(chains[1])
+    @assert 0 < start < chainlength
+    
+    samples = start : sieve : ifelse(iszero(stop), chainlength, stop)
+    @assert 0 <= last(samples) <= chainlength
+    
+    O = Matrix{Float64}(undef,k.nz, length(samples))
+    Cl = similar(O)
+    
+    sc = SedimentColumn(k.nz,seawater...)
+    ka_dt = CorePore.dt_climatetimestep(climate.t,k.dt)
+    
+    @inbounds for i = samples
+        p = Proposal(chains.onset[i], chains.dfrz[i], chains.dmlt[i], chains.sea2frz[i], chains.frz2mlt[i], chains.flr[i], chains.basalCl[i], chains.basalO[i])
+    
+        porewaterhistory!(sc,p, k, climate, seawater, ka_dt)
+    
+        O[:,i] .= sc.O.p
+        Cl[:,i] .= sc.Cl.p
+    end
+    
+    return (; z= k.z, O, Cl)
+end
+
+"""
+
+    coredensity(x, xz, prior, priorz; f=Figure(), bins=100, xlabel, ylabel, color)
+
+Plot a heatmap of densities for sieved results `x` with corresponding depth nodes `xz`, and `prior` data at depths in `priorz`. Heatmap `bins`=100 by default, and you may optionally provide a custom `xlabel`, `ylabel`, and `color`map. See https://docs.makie.org/v0.21/explanations/colors for options. 
+
+To add the plot as a panel in a prexisting figure, provide position information to `f` (e.g. `f=fig[1,2]`).
+
+"""
+function profiledenisty(x::Matrix{F}, xz::AbstractRange, prior::CorePore.MuSig, priorz::Vector; f=Makie.Figure(), bins::Int=100, xlabel::String="[Cl⁻] (g/kg)", ylabel::String="Depth below sea floor (m)", color=:Blues) where F<:AbstractFloat
+
+    n = size(x,2)
+    
+    mn,mx = extrema(x)
+    scooch = 0.1abs(mx-mn)
+    br = range(mn-scooch,mx+scooch, bins+1)
+    
+    hists = Matrix{Float64}(undef, bins,length(xz))
+    h = Vector{Int}(undef,bins)
+    
+    @inbounds for i = eachindex(xz)
+        view(hists,:,i) .= CleanHistograms.quickhist!(h,view(x,i,:), br) / n
+    end
+    
+    ax = Makie.Axis(f[1,1], yreversed=true,xlabel=xlabel, ylabel=ylabel)
+    
+    Makie.heatmap!(ax,br, xz, hists, lowclip=:transparent, colorrange=(0,1),colormap=color)
+    
+    Makie.errorbars!(ax,prior.mu, priorz, prior.sig, direction=:x, color=(:black), linewidth=1)
+
+    Makie.scatter!(ax,prior.mu, priorz, color=:black, markersize=5)
+    
+    f
+    end
+
+
+
+"""
+
+    coretrace(x, xz, prior, priorz; f=Figure(), bins=100, xlabel, ylabel, color)
+
+Plot traces for sieved results `x` with corresponding depth nodes `xz` and`prior` data at depths in `priorz`. You may optionally provide a custom `xlabel`, `ylabel`, and trace `color`. See https://juliagraphics.github.io/Colors.jl/stable/namedcolors/ for options.
+
+To add the plot as a panel in a prexisting figure, provide position information to `f` (e.g. `f=fig[1,2]`).
+
+"""
+function coretrace(x::Matrix{F}, xz::AbstractRange, prior::CorePore.MuSig, priorz::Vector; f=Makie.Figure(), xlabel::String="[Cl⁻] (g/kg)", ylabel::String="Depth below sea floor (m)", color=:tomato) where F<:AbstractFloat
+
+    ax = Makie.Axis(f[1,1], yreversed=true,xlabel=xlabel, ylabel=ylabel)
+    wt = 1/ size(x,2)
+
+    @inbounds for i = axes(x,2)
+        lines!(ax, view(x,:,i), xz, color=(color,wt))
+    end
+
+    Makie.errorbars!(ax,prior.mu, priorz, prior.sig, direction=:x, color=(:black), linewidth=1)
+    Makie.scatter!(ax,prior.mu, priorz, color=:black, markersize=5)
+
     f
 end
