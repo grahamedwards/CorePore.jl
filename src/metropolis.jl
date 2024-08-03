@@ -97,20 +97,23 @@ function porewatermetropolis(p::Proposal, jumpsigma::Proposal, prior::CoreData; 
     scalejump=2.4
 
     pwhfunc = if onlychloride 
+        printstyled("Chloride-only mode (onlychloride=true)", bold=true,color=:cyan)
         explore_ = ()
         @inbounds for i ∈ explore
             if i != :basalO
                 explore_ = (explore_...,i)
+            else
+                println(":  MCMC will not explore :basalO (= $(p.basalO))\n\n")
             end
         end
         explore = explore_
-        printstyled("Chloride-only mode (onlychloride=true): ", bold=true,color=:cyan)
-        println(" MCMC will not explore :basalO (= $(p.basalO))\n\n")
-        flush(stdout)
         chlorporewaterhistory!
     else
+        printstyled("Chloride & δ¹⁸O mode (onlychloride=false)\n\n", bold=true,color=:light_blue)
         porewaterhistory!
     end
+    
+    flush(stdout)
 
     record_max_age = first(climate.t)
     climate_limits = extrema(climate.x)
