@@ -169,7 +169,7 @@ end
 
     PorewaterProperty(n::Int, [, x])
 
-`struct` to contain sediment column poperties at each node for a prior timestep `o` and present timestep `p`.
+`struct` to contain sediment column poperties at each node for the previous timestep `o` and present timestep `p`.
 
 Constructor function returns an instance of `PorewaterProperty` with vectors of length `n`.  Optionally provide a value `x <: Number` to fill vectors with (otherwise values are undefined). 
 
@@ -392,3 +392,62 @@ end
 Returns a tuple of the contents of `x`. Avoids type inherent instability of `Base.iterate` for fast splatting.
 """
 fastsplat(x::Proposal) = (x.onset, x.dfrz, x.dmlt, x.sea2frz, x.frz2mlt, x.flr, x.basalCl, x.basalO)
+
+
+
+"""
+
+    ProposalPriors(climate, k; onset, dfrz, fmlt, climatelimits, flr, basalCl, basalO)
+
+
+Custom `struct` to hold the bounds of parameters in Proposal as `Tuple`s of (`minimum value`, `maximum value`). The constructor function takes a [`ClimateHistory`](@ref) instance `climate` and [`Constants`](@ref) instance `k`, as well as any customizations to default values.
+
+---
+
+## Fields
+
+See [`Proposal`](@ref) for descriptions and units of shared parameters.
+
+| field | default | explanation |
+| :---- | :------ | :---------- |
+|`onset`|  (`0`, `first(climate.t)`) | Onset date must fall within climate record timespan.
+| `dfrz`| (`0`, `0.002`) | Freezing rate is non-zero and less than the upperbound of observed freezing rates (0.002 m/yr).¹ |
+| `dmlt` | (`0`, `10`) | Annual melting rate is non-zero and must be no more than that observed at the Thwaites grounding line.² |
+| `climatelimits` | `extrema(climate.x)` | `sea2frz` and `frz2mlt` must lie within the observed climate record values. |
+| `flr` | (`0`, `k.depth`) | Diffusive porewater column (`p.flr`) has non-zero depth within model domain. |
+| `basalCl` | (`0`, `200`) | Basal [Cl⁻] compositions within 0-200 g/kg. (³) |
+| `basalO` | (`-56`, `∞`) | δ¹⁸O exceed dome-like values. |
+|||
+
+¹ Must be  ≤ 0.4dt/dz to prevent an error in a log-calculation in `CorePore.boundaryconditions`
+
+² <10 m/yr -- Davis+ 2023, https://www.nature.com/articles/s41586-022-05586-0
+
+³ The water+halite peritectic is ~163 g/kg Cl, assuming charge balance with NaCl.
+
+"""
+struct ProposalPriors
+    onset::Tuple{Float64,Float64}
+    dfrz::Tuple{Float64,Float64}
+    dmlt::Tuple{Float64,Float64}
+    climatelimits::Tuple{Float64,Float64} 
+    flr::Tuple{Float64,Float64}
+    basalCl::Tuple{Float64,Float64}
+    basalO::Tuple{Float64,Float64} 
+end
+
+function ProposalPriors(climate::ClimateHistory, k::Constants; 
+    onset::Tuple{Number,Number}=(NaN,NaN),
+    dfrz::Tuple{Number,Number} = (0.,0.002),
+    dmlt::Tuple{Number,Number} = (0.,10.),
+     climatelimits::Tuple{Number,Number} = (NaN,NaN),
+     flr::Tuple{Number,Number}  = (NaN,NaN), 
+     basalCl::Tuple{Number,Number} = (0.,200.), 
+     basalO::Tuple{Number,Number} = (-56.,Inf))
+
+    onset = ifelse(isnan(sum(onset)), (0,first(climate.t)), onset)
+    climatelimits = ifelse(isnan(sum(climatelimits)), extrema(climate.x), climatelimits)
+    flr = ifelse(isnan(sum(flr)), (0,k.depth), flr)
+  
+    ProposalPriors(float.(onset), float.(dfrz), float.(dmlt), float.(climatelimits), float.(flr), float.(basalCl), float.(basalO))
+end

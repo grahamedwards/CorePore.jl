@@ -51,3 +51,11 @@ proposaltest = Proposal(1,1,1,1,1,1,1,1)
 @test update(proposaltest, :basalO, 2.) == Proposal(1,1,1,1,1,1,1,2)
 
 @test (proposaltest...,) == CorePore.fastsplat(proposaltest)
+
+
+@test CorePore.ProposalPriors(lr04test,ktest).onset === (0.0, 5320.0)
+@test CorePore.ProposalPriors(lr04test,ktest, onset=(1.,2.)).onset === (1.,2.)
+@test CorePore.ProposalPriors(lr04test,ktest).climatelimits == (2.65, 5.08)
+@test CorePore.ProposalPriors(lr04test,ktest, climatelimits=(1.,2.)).climatelimits === (1.,2.)
+@test CorePore.ProposalPriors(lr04test,ktest).flr === (0.0, 2000.)
+@test CorePore.ProposalPriors(lr04test,ktest, flr=(1,2)).flr === (1.,2.)

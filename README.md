@@ -31,5 +31,9 @@ using CorePore
 p = Proposal(5320., 1e-4,1e-3,3.5, 4.2, 1000, deepbonney()...)
 jumpsize = Proposal(20., .1e-4, .1e-3, .1, .1,10, 10, 1.)
 
-chains = porewatermetropolis(p, jumpsize, andrill2a(); burnin=1000, chainsteps=1000, k=Constants(), seawater=mcmurdosound(), climate=LR04(), onlychloride=true)
+climate, k = LR04(), Constants()
+
+priors = ProposalPriors(climate, k)
+
+chains = porewatermetropolis(p, jumpsize, priors, andrill2a(), climate, k; burnin=1000, chainsteps=1000, k=Constants(), seawater=mcmurdosound(), onlychloride=true)
 ```

@@ -14,16 +14,10 @@ end
 
 """
 
+!!! DEPRECATED !!!
     CorePore.strictpriors(p::Proposal, record_max_age::Number, climatelimits::Tuple{Number,Number}, depth::Number)
 
-Evalute strict constraints on priors that will automatically reject a proposal with...
-- Onset date beyond the climate record timespan (in ka) (`record_max_age`)
-- Nonphysical subglacial thresholds -- melting at lower benthic δ¹⁸O than freezing or values exceeding the record extrema (`climatelimits`).
-- Freezing rate is non-zero and less than the upperbound of observed freezing rates (0.002 m/yr)
-- Annual melting rate is non-zero and must be no more than that observed at the Thwaites grounding line (<10 m/yr, [Davis+ 2023](https://www.nature.com/articles/s41586-022-05586-0)).
-- Diffusive porewater column (`p.flr`) is between 0 and the model sediment column `depth`.
-- Basal [Cl⁻] compositions < 0 g/kg or in excess of 200 g/kg (the water+halite peritectic is ~163 g/kg Cl, assuming charge balance with NaCl)
--  δ¹⁸O compositions less than dome-like values (~ -56 ‰)
+Evalute strict constraints on priors that will automatically reject a proposal with..
 
 """
 function strictpriors(p::Proposal, record_max_age::Number, climatelimits::Tuple{Number,Number}, depth::Number)
@@ -37,6 +31,30 @@ function strictpriors(p::Proposal, record_max_age::Number, climatelimits::Tuple{
     x &= 0 < p.flr <= depth
     x &= 0 < p.basalCl <= 200
     x &= -56 < p.basalO
+
+    x
+end
+
+"""
+
+    checkpriors(p::Proposal, pp::ProposalPriors)
+
+Returns `false` if any proposal value `p` falls beyond the prescribed prior bounds in `pp`, or if proposed subglacial thresholds are non-physical, i.e. melting at lower benthic δ¹⁸O than freezing.
+    
+Otherwise returns `true`.
+
+"""
+function checkpriors(p::Proposal, pp::ProposalPriors)
+    
+    x=true
+    
+    x &= pp.onset[1] < p.onset <= pp.onset[2]
+    x &= pp.dfrz[1] < p.dfrz <= pp.dfrz[2] 
+    x &= pp.dmlt[1] < p.dmlt <= pp.dmlt[2]
+    x &= pp.climatelimits[1] < p.sea2frz < p.frz2mlt < pp.climatelimits[2]
+    x &= pp.flr[1] < p.flr <= pp.flr[2]
+    x &= pp.basalCl[1] < p.basalCl <= pp.basalCl[2]
+    x &= pp.basalO[1] < p.basalO < pp.basalO[2]
 
     x
 end
@@ -71,10 +89,12 @@ end
 """
 
 ```julia
-porewatermetropolis(p, σ, prior; burnin=10, chainsteps=10, climate, k, seawater, onlychloride=true, explore, rng)
+porewatermetropolis(p, σ, priors, coredata, cliamte, k; burnin=10, chainsteps=10, climate, k, seawater, onlychloride=true, explore, rng)
 ```
 
-Executes a Markov chain Monte Carlo (MCMC) routine that explores the parameter space of the variables in [`Proposal`](@ref) instance `p`, constrained by sediment column porewater chemistry records in [`CoreData`](@ref) instance `prior` and climate record in [`ClimateHistory`](@ref) instance `climate` (=[`LR04`](@ref) by default). `Proposal` instance `σ` describes the (1σ) Gaussian jump size corresponding to each field in `p` (note that fields `:dmlt`, `:dfrz`, and `:basalCl` use a log-normal jump and require a log-space value in `σ`). 
+Executes a Markov chain Monte Carlo (MCMC) routine that explores the parameter space of the variables in [`Proposal`](@ref) instance `p`, constrained by sediment column porewater chemistry records in [`CoreData`](@ref) instance `coredata` and climate record in [`ClimateHistory`](@ref) instance `climate` (e.g. [`LR04`](@ref)), and diffusion-advection parameters in [`Constants`](@ref) instance `k` (I recommend using default values `Constants()`).
+
+`Proposal` instance `σ` describes the (1σ) Gaussian jump size corresponding to each field in `p` (note that fields `:dmlt`, `:dfrz`, and `:basalCl` use a log-normal jump and require a log-space value in `σ`), and `priors` are a [`ProposalPriors`](@ref) instance describing the prior bounds on `p`. 
 
 Kwarg `onlychloride` determines whether the MCMC inverts for only porewater chloridity (default=`true`) or porewater chloridity and δ¹⁸O (`false`).
 
@@ -84,7 +104,6 @@ kwarg | `DataType` | description | default
 :---- | :--------: | :---------- | ------:
 burnin | `Int` | number of Markov chain burnin-warm-up steps | `10`
 chainsteps | `Int` | number of recorded Markov chains steps | `10`
-k | [`Constants`](@ref) | constants and coefficients used in diffusion-advection calculations | `Constants()`
 seawater | [`Water`](@ref) | seawater composition overlying sediment column | `mcmurdosound()`
 explore | `Tuple{Vararg{Symbol}}` | parameters explored by the MCMC | `fieldnames(Proposal)`
 rng | `AbstractRNG` | optional random number seed | `Random.Xoshiro()`
@@ -92,7 +111,7 @@ rng | `AbstractRNG` | optional random number seed | `Random.Xoshiro()`
 see also: [`Proposal`](@ref), [`CoreData`](@ref), [`ClimateHistory`](@ref), [`Constants`](@ref), [`Water`](@ref)
 
 """
-function porewatermetropolis(p::Proposal, jumpsigma::Proposal, prior::CoreData; burnin::Int=10, chainsteps::Int=10, climate::ClimateHistory=LR04(), k::Constants=Constants(), seawater::Water=mcmurdosound(), onlychloride::Bool=true, explore::Tuple{Vararg{Symbol}}=fieldnames(Proposal),  rng::AbstractRNG=Random.Xoshiro())
+function porewatermetropolis(p::Proposal, jumpsigma::Proposal, priors::ProposalPriors, coredata::CoreData, climate::ClimateHistory, k::Constants; burnin::Int=10, chainsteps::Int=10,  seawater::Water=mcmurdosound(), onlychloride::Bool=true, explore::Tuple{Vararg{Symbol}}=fieldnames(Proposal),  rng::AbstractRNG=Random.Xoshiro())
 
     scalejump=2.4
 
@@ -115,9 +134,6 @@ function porewatermetropolis(p::Proposal, jumpsigma::Proposal, prior::CoreData; 
     
     flush(stdout)
 
-    record_max_age = first(climate.t)
-    climate_limits = extrema(climate.x)
-
     ϕ = p # make a new proposal from the original.
 
     chains = Matrix{Float64}(undef, length(fieldnames(Proposal)), chainsteps)
@@ -129,7 +145,7 @@ function porewatermetropolis(p::Proposal, jumpsigma::Proposal, prior::CoreData; 
     
     pwhfunc(sc, ϕ, k, climate, seawater, ka_dt)
     
-    llCl, llO = loglikelihood(prior.z,prior.Cl.mu,prior.Cl.sig,k.z,sc.Cl.p), loglikelihood(prior.z,prior.O.mu,prior.O.sig,k.z,sc.O.p)
+    llCl, llO = loglikelihood(coredata.z,coredata.Cl.mu,coredata.Cl.sig,k.z,sc.Cl.p), loglikelihood(coredata.z,coredata.O.mu,coredata.O.sig,k.z,sc.O.p)
     ll = llCl + ifelse(onlychloride,0,llO)
     
     clock = time()
@@ -143,11 +159,11 @@ function porewatermetropolis(p::Proposal, jumpsigma::Proposal, prior::CoreData; 
 
 
         ϕ, jumpname, jump = proposaljump(p, jumpsigma, f=explore, rng=rng)
-        if strictpriors(ϕ, record_max_age, climate_limits, k.depth)
+        if checkpriors(ϕ, priors)
 
             pwhfunc(sc, ϕ, k, climate, seawater, ka_dt)
 
-            llCl, llO = loglikelihood(prior.z,prior.Cl.mu,prior.Cl.sig,k.z,sc.Cl.p), loglikelihood(prior.z,prior.O.mu,prior.O.sig,k.z,sc.O.p)
+            llCl, llO = loglikelihood(coredata.z,coredata.Cl.mu,coredata.Cl.sig,k.z,sc.Cl.p), loglikelihood(coredata.z,coredata.O.mu,coredata.O.sig,k.z,sc.O.p)
             llϕ = llCl + ifelse(onlychloride,0,llO)
         else
             llϕ=-Inf
@@ -173,11 +189,11 @@ function porewatermetropolis(p::Proposal, jumpsigma::Proposal, prior::CoreData; 
     @inbounds for i = 1:chainsteps
 
         ϕ, jumpname, jump = proposaljump(p, jumpsigma, f=explore, rng=rng)
-        if strictpriors(ϕ, record_max_age, climate_limits, k.depth)
+        if checkpriors(ϕ, priors)
 
             pwhfunc(sc, ϕ, k, climate, seawater, ka_dt)
 
-            llCl, llO = loglikelihood(prior.z,prior.Cl.mu,prior.Cl.sig,k.z,sc.Cl.p), loglikelihood(prior.z,prior.O.mu,prior.O.sig,k.z,sc.O.p)
+            llCl, llO = loglikelihood(coredata.z,coredata.Cl.mu,coredata.Cl.sig,k.z,sc.Cl.p), loglikelihood(coredata.z,coredata.O.mu,coredata.O.sig,k.z,sc.O.p)
             llϕ = llCl + ifelse(onlychloride,0,llO)
         else
             llϕ=-Inf

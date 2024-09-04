@@ -2,7 +2,7 @@ module CorePore
 import DelimitedFiles, Requires, Statistics
 using Random
 
-export Water, mcmurdoshelf, mcmurdosound, deepbonney, CoreData, andrill2a, andrill1b, PorewaterProperty, SedimentColumn, LR04, Constants, Proposal, update
+export Water, mcmurdoshelf, mcmurdosound, deepbonney, CoreData, andrill2a, andrill1b, PorewaterProperty, SedimentColumn, LR04, Constants, Proposal, update, ProposalPriors
 include("parameters.jl")
 
 export density, diffusionadvection, diffuseadvectcolumn!
