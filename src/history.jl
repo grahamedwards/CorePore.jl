@@ -13,7 +13,6 @@ function porewaterhistory!(sc::SedimentColumn, p::Proposal, k::Constants, climhi
     equilibratecolumn!(sc,sw,Water(p.basalCl,p.basalO),k.z,p.flr)
 
     isd = searchsortedfirst(climhist.t, p.onset, rev=true)
-    #isd = ifelse(isd<climhist.n, isd, climhist.n)
     @inbounds for t = isd:climhist.n
         climate = climhist.x[t]
 

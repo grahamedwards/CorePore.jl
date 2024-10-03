@@ -12,32 +12,10 @@ function stopwatch(i::Integer,n::Integer,t::Number)
     string("0% |", bar,"| 100%  ||  step: $i / $n  ||  time: $tt m")
 end
 
-"""
-
-!!! DEPRECATED !!!
-    CorePore.strictpriors(p::Proposal, record_max_age::Number, climatelimits::Tuple{Number,Number}, depth::Number)
-
-Evalute strict constraints on priors that will automatically reject a proposal with..
-
-"""
-function strictpriors(p::Proposal, record_max_age::Number, climatelimits::Tuple{Number,Number}, depth::Number)
-    
-    x=true
-    
-    x &= 0 < p.onset <= record_max_age
-    x &= climatelimits[1] < p.sea2frz < p.frz2mlt < climatelimits[2]
-    x &= 0 < p.dfrz <= 0.002 # ≤ 0.4dt/dz to prevent an error in a log-calculation in `CorePore.boundaryconditions`
-    x &= 0 < p.dmlt <= 10.
-    x &= 0 < p.flr <= depth
-    x &= 0 < p.basalCl <= 200
-    x &= -56 < p.basalO
-
-    x
-end
 
 """
 
-    checkpriors(p::Proposal, pp::ProposalPriors)
+    CorePore.checkpriors(p::Proposal, pp::ProposalPriors)
 
 Returns `false` if any proposal value `p` falls beyond the prescribed prior bounds in `pp`, or if proposed subglacial thresholds are non-physical, i.e. melting at lower benthic δ¹⁸O than freezing.
     
@@ -49,8 +27,8 @@ function checkpriors(p::Proposal, pp::ProposalPriors)
     x=true
     
     x &= pp.onset[1] < p.onset <= pp.onset[2]
-    x &= pp.dfrz[1] < p.dfrz <= pp.dfrz[2] 
-    x &= pp.dmlt[1] < p.dmlt <= pp.dmlt[2]
+    x &= pp.dfrz[1] < p.dfrz < pp.dfrz[2] 
+    x &= pp.dmlt[1] < p.dmlt < pp.dmlt[2]
     x &= pp.climatelimits[1] < p.sea2frz < p.frz2mlt < pp.climatelimits[2]
     x &= pp.flr[1] < p.flr <= pp.flr[2]
     x &= pp.basalCl[1] < p.basalCl <= pp.basalCl[2]
@@ -145,7 +123,8 @@ function porewatermetropolis(p::Proposal, jumpsigma::Proposal, priors::ProposalP
     
     pwhfunc(sc, ϕ, k, climate, seawater, ka_dt)
     
-    llCl, llO = loglikelihood(coredata.z,coredata.Cl.mu,coredata.Cl.sig,k.z,sc.Cl.p), loglikelihood(coredata.z,coredata.O.mu,coredata.O.sig,k.z,sc.O.p)
+    llCl = loglikelihood(coredata.z,coredata.Cl.mu,coredata.Cl.sig,k.z,sc.Cl.p)
+    llO = loglikelihood(coredata.z,coredata.O.mu,coredata.O.sig,k.z,sc.O.p)
     ll = llCl + ifelse(onlychloride,0,llO)
     
     clock = time()
@@ -163,7 +142,8 @@ function porewatermetropolis(p::Proposal, jumpsigma::Proposal, priors::ProposalP
 
             pwhfunc(sc, ϕ, k, climate, seawater, ka_dt)
 
-            llCl, llO = loglikelihood(coredata.z,coredata.Cl.mu,coredata.Cl.sig,k.z,sc.Cl.p), loglikelihood(coredata.z,coredata.O.mu,coredata.O.sig,k.z,sc.O.p)
+            llCl = loglikelihood(coredata.z,coredata.Cl.mu,coredata.Cl.sig,k.z,sc.Cl.p)
+            llO = loglikelihood(coredata.z,coredata.O.mu,coredata.O.sig,k.z,sc.O.p)
             llϕ = llCl + ifelse(onlychloride,0,llO)
         else
             llϕ=-Inf
@@ -193,7 +173,8 @@ function porewatermetropolis(p::Proposal, jumpsigma::Proposal, priors::ProposalP
 
             pwhfunc(sc, ϕ, k, climate, seawater, ka_dt)
 
-            llCl, llO = loglikelihood(coredata.z,coredata.Cl.mu,coredata.Cl.sig,k.z,sc.Cl.p), loglikelihood(coredata.z,coredata.O.mu,coredata.O.sig,k.z,sc.O.p)
+            llCl = loglikelihood(coredata.z,coredata.Cl.mu,coredata.Cl.sig,k.z,sc.Cl.p)
+            llO = loglikelihood(coredata.z,coredata.O.mu,coredata.O.sig,k.z,sc.O.p)
             llϕ = llCl + ifelse(onlychloride,0,llO)
         else
             llϕ=-Inf

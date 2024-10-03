@@ -411,8 +411,8 @@ See [`Proposal`](@ref) for descriptions and units of shared parameters.
 | field | default | explanation |
 | :---- | :------ | :---------- |
 |`onset`|  (`0`, `first(climate.t)`) | Onset date must fall within climate record timespan.
-| `dfrz`| (`0`, `0.002`) | Freezing rate is non-zero and less than the upperbound of observed freezing rates (0.002 m/yr).¹ |
-| `dmlt` | (`0`, `10`) | Annual melting rate is non-zero and must be no more than that observed at the Thwaites grounding line.² |
+| `dfrz`| (`0`, `0.002`) | Freezing rate >0 and less than the upperbound of observed freezing rates (0.002 m/yr).¹ |
+| `dmlt` | (`0`, `10`) | Annual melting rate >0 and less than that observed at the Thwaites grounding line.² |
 | `climatelimits` | `extrema(climate.x)` | `sea2frz` and `frz2mlt` must lie within the observed climate record values. |
 | `flr` | (`0`, `k.depth`) | Diffusive porewater column (`p.flr`) has non-zero depth within model domain. |
 | `basalCl` | (`0`, `200`) | Basal [Cl⁻] compositions within 0-200 g/kg. (³) |
